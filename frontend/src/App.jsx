@@ -1,14 +1,24 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import SignUp from "./pages/sign-up/SignUp";
+import Login from "./pages/login/Login";
+// import Dashboard from "./pages/dashboard/Dashboard";
+// import NoteEditor from "./pages/note-editor/NoteEditor";
+
 function App() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-      <h1 className="text-5xl font-bold text-blue-600 underline decoration-wavy decoration-blue-400 mb-4">
-        Tailwind CSS is Working! 🎉
-      </h1>
-      <p className="text-xl text-gray-700">
-        You've got a clean slate to build your MERN stack notes app.
-      </p>
-    </div>
-  )
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
+          {/* <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/notes/new" element={<NoteEditor />} />
+          <Route path="/notes/:id" element={<NoteEditor />} /> */}
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
