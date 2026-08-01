@@ -127,6 +127,6 @@ dist/
 dist-ssr/
 
 # IDE files
-.vscode/
+.vscode/*
 !.vscode/extensions.json
 .idea/
