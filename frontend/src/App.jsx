@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import SignUp from "./pages/sign-up/SignUp";
 import Login from "./pages/login/Login";
 import Dashboard from "./pages/dashboard/Dashboard";
+import ProtectedRoute from "./components/protected-route/ProtectedRoute";
 // import NoteEditor from "./pages/note-editor/NoteEditor";
 
 function App() {
@@ -12,9 +13,14 @@ function App() {
         <Routes>
           <Route path="/" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
-           <Route path="/dashboard" element={<Dashboard />} />
-          {/* <Route path="/notes/new" element={<NoteEditor />} />
-          <Route path="/notes/:id" element={<NoteEditor />} />  */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

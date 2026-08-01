@@ -19,9 +19,10 @@ function NoteCard({ note, index, handleDelete }) {
           {note.title || "Untitled"}
         </h3>
 
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
           <Link
             to={`/notes/${note._id}`}
+            aria-label="Edit note"
             className="p-1.5 text-[#6B6A63] hover:text-[#F4C430] bg-white border border-transparent hover:border-[#E5E2D9] rounded-md transition-all shadow-sm"
           >
             <Edit3 size={14} />
@@ -29,6 +30,7 @@ function NoteCard({ note, index, handleDelete }) {
 
           <button
             onClick={() => handleDelete(note._id)}
+            aria-label="Delete note"
             className="p-1.5 text-[#6B6A63] hover:text-red-500 bg-white border border-transparent hover:border-[#E5E2D9] rounded-md transition-all shadow-sm"
           >
             <Trash2 size={14} />

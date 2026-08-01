@@ -16,6 +16,7 @@ function Dashboard() {
   const [notes, setNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchNotes();
@@ -23,6 +24,7 @@ function Dashboard() {
 
   async function fetchNotes() {
     setIsLoading(true);
+    setError(null);
     try {
       const response = await api.get("/api/notes");
       if (Array.isArray(response.data)) {
@@ -33,14 +35,9 @@ function Dashboard() {
         throw new Error("Invalid response format");
       }
     } catch (err) {
-      console.error("Failed to fetch notes, using fallback for UI demo", err);
-      // Dummy data for frontend preview
-      setNotes([
-        { _id: "1", title: "Groceries", content: "Milk, Eggs, Bread, Butter, Coffee beans, Oat milk...", updatedAt: new Date().toISOString() },
-        { _id: "2", title: "Trip to Paris", content: "Eiffel tower, Louvre, Disneyland, Seine river cruise.", updatedAt: new Date(Date.now() - 86400000).toISOString() },
-        { _id: "3", title: "Project Ideas", content: "A notebook themed notes app, maybe use React and Framer Motion.", updatedAt: new Date(Date.now() - 172800000).toISOString() },
-        { _id: "4", title: "Daily Journal", content: "Today was a good day. Finally figured out that tricky React bug.", updatedAt: new Date(Date.now() - 259200000).toISOString() },
-      ]);
+      console.error("Failed to fetch notes", err);
+      setError("Couldn't load your notes. Please try again.");
+      setNotes([]);
     } finally {
       setIsLoading(false);
     }
@@ -52,15 +49,13 @@ function Dashboard() {
   };
 
   const handleDelete = async (id) => {
-    try {
-      await api.delete(`/api/notes/${id}`);
-      setNotes(notes.filter(n => n._id !== id));
-    } catch (err) {
-      console.error("Delete failed", err);
-      // Optimistic delete for demo
-      setNotes(notes.filter(n => n._id !== id));
-    }
-  };
+  try {
+    await api.delete(`/api/notes/${id}`);
+    setNotes((currentNotes) => currentNotes.filter(n => n._id !== id));
+  } catch (err) {
+    console.error("Delete failed", err);
+  }
+};
 
   const filteredNotes = Array.isArray(notes) ? notes.filter(
     (note) =>
@@ -93,12 +88,22 @@ function Dashboard() {
 
         {/* Notes List */}
         {isLoading ? (
-          <LoadingSpinner />
-        ) : filteredNotes.length === 0 ? (
-          <EmptyState searchQuery={searchQuery} />
-        ) : (
-         <NotesGrid filteredNotes={filteredNotes} handleDelete={handleDelete} />
-        )}
+  <LoadingSpinner />
+) : error ? (
+  <div className="text-center py-20 text-[#6B6A63]">
+    <p className="mb-4">{error}</p>
+    <button
+      onClick={fetchNotes}
+      className="px-4 py-2 bg-[#F4C430] text-[#121212] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+    >
+      Retry
+    </button>
+  </div>
+) : filteredNotes.length === 0 ? (
+  <EmptyState searchQuery={searchQuery} />
+) : (
+  <NotesGrid filteredNotes={filteredNotes} handleDelete={handleDelete} />
+)}
       </main>
     </div>
   );

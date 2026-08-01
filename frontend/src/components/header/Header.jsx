@@ -17,7 +17,7 @@ function Header({ user, handleLogout }) {
             <div className="w-8 h-8 rounded-full bg-[#F4C430]/20 flex items-center justify-center text-[#F4C430]">
               <User size={16} />
             </div>
-            <span className="font-medium text-[#121212]">{user?.name || "Urooj Butt"}</span>
+            <span className="font-medium text-[#121212]">{user?.name || "Account"}</span>
           </div>
           <button
             onClick={handleLogout}

@@ -12,10 +12,10 @@ function DashboardActions({ searchQuery, setSearchQuery }) {
         {/* Search Bar */}
         <div className="relative flex-1 sm:w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B6A63]" />
-
           <input
             type="text"
             placeholder="Search notes..."
+            aria-label="Search notes"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 sm:py-2.5 bg-white border border-[#E5E2D9] rounded-lg text-sm text-[#121212] placeholder:text-[#6B6A63]/60 focus:outline-none focus:border-[#F4C430] transition-colors shadow-sm"
