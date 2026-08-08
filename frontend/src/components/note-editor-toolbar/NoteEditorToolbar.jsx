@@ -9,6 +9,14 @@ import {
     Redo,
 } from "lucide-react";
 
+/**
+ * @param {Object} props
+ * @param {() => void} props.onClick - Handler called when the button is clicked
+ * @param {boolean} [props.isActive] - Whether the associated editor mark/node is currently active
+ * @param {boolean} [props.disabled] - Whether the button is disabled (e.g. undo/redo unavailable)
+ * @param {React.ReactNode} props.children - Icon to render inside the button
+ * @param {string} props.label - Accessible label for the button
+ */
 function ToolbarButton({ onClick, isActive, disabled, children, label }) {
     return (
         <button
@@ -28,6 +36,10 @@ function ToolbarButton({ onClick, isActive, disabled, children, label }) {
     );
 }
 
+/**
+ * @param {Object} props
+ * @param {import('@tiptap/react').Editor | null} props.editor - Tiptap editor instance
+ */
 export default function NoteEditorToolbar({ editor }) {
     if (!editor) return null;
     return (

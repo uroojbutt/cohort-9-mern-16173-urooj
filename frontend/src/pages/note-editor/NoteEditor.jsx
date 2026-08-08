@@ -104,7 +104,7 @@ export default function NoteEditor() {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Couldn't save your note. Please try again."
+        "Couldn't save your note. Please try again."
       );
     } finally {
       setIsSaving(false);
@@ -133,7 +133,7 @@ export default function NoteEditor() {
   }
 
   return (
-    <div 
+    <div
       className="min-h-screen font-sans text-[#121212] flex flex-col"
       style={{
         backgroundColor: "#ffffff",
@@ -143,7 +143,7 @@ export default function NoteEditor() {
     >
       <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 flex-1 flex flex-col">
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between mb-8"
@@ -157,7 +157,7 @@ export default function NoteEditor() {
             <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform " />
             <span className="cursor-pointer">Back</span>
           </button>
-          
+
           <button
             type="button"
             onClick={handleSave}
@@ -181,16 +181,19 @@ export default function NoteEditor() {
             role="alert"
             className="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600 flex items-center gap-3 shadow-sm"
           >
-           
-            
-            <button onClick={() => setError(null)} className="cursor-pointer">
+
+
+            <button onClick={() => setError(null)}
+              className="cursor-pointer"
+              aria-label="Dismiss error"
+            >
               <X size={18} />
             </button>
             {error}
           </motion.div>
         )}
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -198,7 +201,7 @@ export default function NoteEditor() {
         >
           {/* Main Editor Card */}
           <div className="bg-white/80 backdrop-blur-md rounded-3xl border border-[#E5E2D9] shadow-sm overflow-hidden flex flex-col flex-1">
-            
+
             {/* Title Section */}
             <div className="px-6 sm:px-10 pt-8 pb-4 border-b border-[#E5E2D9]/50">
               <input
@@ -219,10 +222,10 @@ export default function NoteEditor() {
             {/* Rich text editor area */}
             <div className="flex-1 overflow-y-auto cursor-text" onClick={() => editor?.commands.focus()}>
               <div className="min-h-full sm:px-4 pb-12">
-                 <EditorContent editor={editor} />
+                <EditorContent editor={editor} />
               </div>
             </div>
-            
+
           </div>
         </motion.div>
       </div>
