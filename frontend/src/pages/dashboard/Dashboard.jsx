@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Search, Plus, LogOut, FileText, Trash2, Edit3, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/api";
 import Header from "../../components/header/Header";
@@ -53,7 +51,9 @@ function Dashboard() {
     await api.delete(`/api/notes/${id}`);
     setNotes((currentNotes) => currentNotes.filter(n => n._id !== id));
   } catch (err) {
-    console.error("Delete failed", err);
+    console.error("Delete failed", err); //add alert when delete fails
+    alert("Failed to delete note");
+
   }
 };
 
