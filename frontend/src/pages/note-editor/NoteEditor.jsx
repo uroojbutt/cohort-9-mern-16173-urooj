@@ -81,14 +81,14 @@ export default function NoteEditor() {
   }, [navigate]);
 
   const handleSave = async () => {
+    if (!editor) return;
+
     if (!title.trim()) {
       setError("Please add a title before saving.");
       return;
     }
-
     setIsSaving(true);
     setError(null);
-
     const payload = {
       title: title.trim(),
       content: editor.getHTML(),
@@ -161,8 +161,8 @@ export default function NoteEditor() {
           <button
             type="button"
             onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-2 rounded-md px-4 py-2.5  bg-[#F4C430] text-[#121212] font-semibold shadow-sm hover:bg-[#e3b52a] hover:shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+            disabled={isSaving || !editor}
+            className="flex items-center gap-2 rounded-md px-4 py-2.5 bg-[#F4C430] text-[#121212] font-semibold shadow-sm hover:bg-[#e3b52a] hover:shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
           >
             {isSaving ? (
               <Loader2 className="animate-spin" size={18} />
