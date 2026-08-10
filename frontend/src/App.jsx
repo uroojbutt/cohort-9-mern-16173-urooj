@@ -5,6 +5,7 @@ import Login from "./pages/login/Login";
 import Dashboard from "./pages/dashboard/Dashboard";
 import ProtectedRoute from "./components/protected-route/ProtectedRoute";
 import NoteEditor from "./pages/note-editor/NoteEditor";
+import Profile from "./pages/profile/Profile";
 function App() {
   return (
     <AuthProvider>
@@ -34,6 +35,14 @@ function App() {
                <ProtectedRoute>
                 <NoteEditor />
                </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
             }
           />
         </Routes>
