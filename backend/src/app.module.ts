@@ -13,9 +13,13 @@ import { AppService } from './app.service';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGO_URI'),
-      }),
+      useFactory: (configService: ConfigService) => {
+        const uri = configService.get<string>('MONGO_URI');
+        if (!uri) {
+          throw new Error('MONGO_URI configuration is missing');
+        }
+        return { uri };
+      },
     }),
    LoggerModule.forRoot({
   pinoHttp: {
@@ -31,7 +35,7 @@ import { AppService } from './app.service';
     serializers: {
       req: (req) => ({
         method: req.method,
-        url: req.url,
+        url: req.url?.split('?')[0],
       }),
       res: (res) => ({
         statusCode: res.statusCode,

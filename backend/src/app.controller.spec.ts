@@ -6,12 +6,17 @@ describe('AppController', () => {
   let appController: AppController;
 
   beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
+    try {
+      const app: TestingModule = await Test.createTestingModule({
+        controllers: [AppController],
+        providers: [AppService],
+      }).compile();
 
-    appController = app.get<AppController>(AppController);
+      appController = app.get<AppController>(AppController);
+    } catch (error) {
+      console.error('Test setup failed:', error);
+      throw error;
+    }
   });
 
   describe('root', () => {
