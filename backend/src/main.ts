@@ -1,7 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { Logger } from 'nestjs-pino';
+import * as dns from 'dns';
 
+if (process.env.USE_CUSTOM_DNS === 'true') {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+}
 async function bootstrap(): Promise<void> {
   try {
     const app = await NestFactory.create(AppModule, { bufferLogs: true });
