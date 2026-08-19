@@ -11,13 +11,19 @@ describe('AuthController', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [AuthController],
-      providers: [{ provide: AuthService, useValue: mockAuthService }],
-    }).compile();
+    try {
+      const module: TestingModule = await Test.createTestingModule({
+        controllers: [AuthController],
+        providers: [{ provide: AuthService, useValue: mockAuthService }],
+      }).compile();
 
-    controller = module.get<AuthController>(AuthController);
+      controller = module.get<AuthController>(AuthController);
+    } catch (error) {
+      console.error('Failed to compile AuthController testing module:', error);
+      throw error;
+    }
   });
+  
 
   it('should be defined', () => {
     expect(controller).toBeDefined();

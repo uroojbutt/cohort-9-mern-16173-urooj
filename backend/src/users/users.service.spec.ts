@@ -12,14 +12,19 @@ describe('UsersService', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        UsersService,
-        { provide: getModelToken(User.name), useValue: mockUserModel },
-      ],
-    }).compile();
+    try {
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          UsersService,
+          { provide: getModelToken(User.name), useValue: mockUserModel },
+        ],
+      }).compile();
 
-    service = module.get<UsersService>(UsersService);
+      service = module.get<UsersService>(UsersService);
+    } catch (error) {
+      console.error('Failed to compile UsersService testing module:', error);
+      throw error;
+    }
   });
 
   it('should be defined', () => {

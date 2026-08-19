@@ -2,6 +2,7 @@ import { Injectable, ConflictException, UnauthorizedException, InternalServerErr
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { UserDocument } from '../users/schemas/user.schema';
 
 export interface AuthResponse {
   access_token: string;
@@ -32,7 +33,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    let user;
+    let user: UserDocument | null;
     try {
       user = await this.usersService.findByEmailWithPassword(email);
     } catch {

@@ -17,15 +17,20 @@ describe('AuthService', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AuthService,
-        { provide: UsersService, useValue: mockUsersService },
-        { provide: JwtService, useValue: mockJwtService },
-      ],
-    }).compile();
+    try {
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          AuthService,
+          { provide: UsersService, useValue: mockUsersService },
+          { provide: JwtService, useValue: mockJwtService },
+        ],
+      }).compile();
 
-    service = module.get<AuthService>(AuthService);
+      service = module.get<AuthService>(AuthService);
+    } catch (error) {
+      console.error('Failed to compile AuthService testing module:', error);
+      throw error;
+    }
   });
 
   it('should be defined', () => {
