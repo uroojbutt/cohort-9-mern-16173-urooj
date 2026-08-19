@@ -7,11 +7,15 @@ import { User, UserDocument } from './schemas/user.schema';
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  create(email: string, password: string, name: string) {
+  create(email: string, password: string, name: string): Promise<UserDocument> {
     return this.userModel.create({ email, password, name });
   }
 
-  findByEmail(email: string) {
+  findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email });
+  }
+
+  findByEmailWithPassword(email: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ email }).select('+password');
   }
 }
