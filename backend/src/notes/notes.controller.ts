@@ -13,6 +13,7 @@ import { NotesService } from './notes.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Note } from './schemas/note.schema';
 
 export interface AuthenticatedRequest {
   user: {
@@ -27,27 +28,27 @@ export class NotesController {
   constructor(private readonly notesService: NotesService) {}
 
   @Post()
-  create(@Req() req: AuthenticatedRequest, @Body() dto: CreateNoteDto) {
+  create(@Req() req: AuthenticatedRequest, @Body() dto: CreateNoteDto): Promise<Note> {
     return this.notesService.create(req.user.userId, dto);
   }
 
   @Get()
-  findAll(@Req() req: AuthenticatedRequest) {
+  findAll(@Req() req: AuthenticatedRequest): Promise<Note[]> {
     return this.notesService.findAll(req.user.userId);
   }
 
   @Get(':id')
-  findOne(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+  findOne(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<Note> {
     return this.notesService.findOne(req.user.userId, id);
   }
 
   @Put(':id')
-  update(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: UpdateNoteDto) {
+  update(@Req() req: AuthenticatedRequest, @Param('id') id: string, @Body() dto: UpdateNoteDto): Promise<Note> {
     return this.notesService.update(req.user.userId, id, dto);
   }
 
   @Delete(':id')
-  remove(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+  remove(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<void> {
     return this.notesService.remove(req.user.userId, id);
   }
-}
+}

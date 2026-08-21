@@ -60,10 +60,6 @@ function SignUp() {
         email: formData.email,
         password: formData.password,
       });
-
-      const { access_token: token, user } = response.data;
-      login(user, token); // updates AuthContext + writes to localStorage
-
       navigate("/login");
     } catch (err) {
       const message =

@@ -32,7 +32,7 @@ describe('NotesService', () => {
           NotesService,
           {
             provide: getModelToken(Note.name),
-            useValue: jest.fn().mockImplementation((dto) => ({
+            useValue: jest.fn().mockImplementation((dto: CreateNoteDto & { userId: string }) => ({
               ...dto,
               save: jest.fn().mockResolvedValue({ ...mockNote, ...dto }),
             })),

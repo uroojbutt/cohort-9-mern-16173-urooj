@@ -13,7 +13,7 @@ describe('NotesController', () => {
     user: { userId: 'user-123', email: 'test@example.com' },
   };
 
-  const mockNotesService = {
+  const mockNotesService: jest.Mocked<Pick<NotesService, 'create' | 'findAll' | 'findOne' | 'update' | 'remove'>> = {
     create: jest.fn(),
     findAll: jest.fn(),
     findOne: jest.fn(),
@@ -40,7 +40,7 @@ describe('NotesController', () => {
 
   it('create should delegate to service with req.user.userId', async () => {
     const dto: CreateNoteDto = { title: 'Test', content: '<p>x</p>' };
-    mockNotesService.create.mockResolvedValue({ ...dto, userId: mockReq.user.userId });
+    mockNotesService.create.mockResolvedValue({ ...dto, userId: mockReq.user.userId } as any);
 
     const result = await controller.create(mockReq, dto);
 
@@ -58,7 +58,7 @@ describe('NotesController', () => {
   });
 
   it('findOne should delegate to service with id and userId', async () => {
-    mockNotesService.findOne.mockResolvedValue({ _id: 'note-1' });
+    mockNotesService.findOne.mockResolvedValue({ _id: 'note-1' } as any);
 
     const result = await controller.findOne(mockReq, 'note-1');
 
@@ -68,7 +68,7 @@ describe('NotesController', () => {
 
   it('update should delegate to service with id, userId and dto', async () => {
     const dto: UpdateNoteDto = { title: 'Updated' };
-    mockNotesService.update.mockResolvedValue({ _id: 'note-1', ...dto });
+    mockNotesService.update.mockResolvedValue({ _id: 'note-1', ...dto } as any);
 
     const result = await controller.update(mockReq, 'note-1', dto);
 

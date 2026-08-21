@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Edit3, Trash2 } from "lucide-react";
+import DOMPurify from "dompurify";
 
 function NoteCard({ note, index, handleDelete }) {
   return (
@@ -42,7 +43,7 @@ function NoteCard({ note, index, handleDelete }) {
       {note.content ? (
         <div 
           className="text-[#6B6A63] text-sm flex-1 overflow-hidden whitespace-pre-wrap leading-relaxed prose prose-sm prose-p:my-0 max-w-none"
-          dangerouslySetInnerHTML={{ __html: note.content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(note.content) }}
         />
       ) : (
         <p className="text-[#6B6A63] text-sm flex-1 overflow-hidden whitespace-pre-wrap leading-relaxed">

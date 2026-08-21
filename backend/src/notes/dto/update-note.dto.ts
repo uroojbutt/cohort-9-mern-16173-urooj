@@ -1,4 +1,14 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateNoteDto } from './create-note.dto';
+import { IsString, IsNotEmpty, MaxLength, Matches, ValidateIf } from 'class-validator';
 
-export class UpdateNoteDto extends PartialType(CreateNoteDto) {}
+export class UpdateNoteDto {
+  @ValidateIf((_obj, value) => value !== undefined)
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(150)
+  @Matches(/\S/, { message: 'Title must not be empty or whitespace only' })
+  title?: string;
+
+  @ValidateIf((_obj, value) => value !== undefined)
+  @IsString({ message: 'content must be a string, not null' })
+  content?: string;
+}
