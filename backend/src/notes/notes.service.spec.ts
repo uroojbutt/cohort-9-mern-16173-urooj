@@ -1,9 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { NotFoundException } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { Types, Model } from 'mongoose';
 import { NotesService } from './notes.service';
 import { Note } from './schemas/note.schema';
+import { CreateNoteDto } from './dto/create-note.dto';
+
+type MockNoteModel = jest.Mock & {
+  find: jest.Mock;
+  findOne: jest.Mock;
+  findOneAndUpdate: jest.Mock;
+  deleteOne: jest.Mock;
+};
 
 const mockNote = {
   _id: new Types.ObjectId().toString(),
@@ -14,26 +22,30 @@ const mockNote = {
 
 describe('NotesService', () => {
   let service: NotesService;
-  let model: any;
+  let model: MockNoteModel;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        NotesService,
-        {
-          provide: getModelToken(Note.name),
-          useValue: jest.fn().mockImplementation((dto) => ({
-            ...dto,
-            save: jest.fn().mockResolvedValue({ ...mockNote, ...dto }),
-          })),
-        },
-      ],
-    }).compile();
+    let module: TestingModule;
+    try {
+      module = await Test.createTestingModule({
+        providers: [
+          NotesService,
+          {
+            provide: getModelToken(Note.name),
+            useValue: jest.fn().mockImplementation((dto) => ({
+              ...dto,
+              save: jest.fn().mockResolvedValue({ ...mockNote, ...dto }),
+            })),
+          },
+        ],
+      }).compile();
+    } catch (err) {
+      throw new Error(`NotesService test module failed to initialize: ${err}`);
+    }
 
     service = module.get<NotesService>(NotesService);
-    model = module.get(getModelToken(Note.name));
+    model = module.get(getModelToken(Note.name)) as MockNoteModel;
 
-    // Attach static-style methods used by findAll/findOne/update/remove
     model.find = jest.fn();
     model.findOne = jest.fn();
     model.findOneAndUpdate = jest.fn();
@@ -46,8 +58,8 @@ describe('NotesService', () => {
 
   describe('create', () => {
     it('should create and return a note linked to the user', async () => {
-      const dto = { title: 'Test note', content: '<p>Hello</p>' };
-      const result = await service.create(mockNote.userId, dto as any);
+      const dto: CreateNoteDto = { title: 'Test note', content: '<p>Hello</p>' };
+      const result = await service.create(mockNote.userId, dto);
 
       expect(model).toHaveBeenCalledWith({ ...dto, userId: mockNote.userId });
       expect(result).toMatchObject(dto);
@@ -111,7 +123,7 @@ describe('NotesService', () => {
       expect(model.findOneAndUpdate).toHaveBeenCalledWith(
         { _id: mockNote._id, userId: mockNote.userId },
         { title: 'Updated' },
-        { new: true },
+        { new: true, runValidators: true },
       );
       expect(result).toEqual(updated);
     });
@@ -127,13 +139,18 @@ describe('NotesService', () => {
   });
 
   describe('remove', () => {
-    it('should delete the note when owned by the user', async () => {
+    it('should delete the note with the correct ownership filter', async () => {
       const exec = jest.fn().mockResolvedValue({ deletedCount: 1 });
       model.deleteOne.mockReturnValue({ exec });
 
       await expect(
         service.remove(mockNote.userId, mockNote._id),
       ).resolves.toBeUndefined();
+
+      expect(model.deleteOne).toHaveBeenCalledWith({
+        _id: mockNote._id,
+        userId: mockNote.userId,
+      });
     });
 
     it('should throw NotFoundException when nothing was deleted', async () => {
