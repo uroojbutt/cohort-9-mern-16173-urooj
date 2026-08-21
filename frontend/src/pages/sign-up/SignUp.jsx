@@ -55,16 +55,16 @@ function SignUp() {
 
     setIsLoading(true);
     try {
-      const response = await api.post("/api/auth/signup", {
+      const response = await api.post("/auth/signup", {
         name: formData.name,
         email: formData.email,
         password: formData.password,
       });
 
-      const { token, user } = response.data;
+      const { access_token: token, user } = response.data;
       login(user, token); // updates AuthContext + writes to localStorage
 
-      navigate("/dashboard");
+      navigate("/login");
     } catch (err) {
       const message =
         err.response?.data?.message ||
@@ -104,9 +104,8 @@ function SignUp() {
               value={formData.name}
               onChange={handleChange}
               placeholder="Your name"
-              className={`w-full pl-10 pr-4 py-2 sm:py-2.5 bg-white border rounded-lg text-[#121212] placeholder:text-[#6B6A63]/60 text-sm focus:outline-none transition-colors ${
-                errors.name ? "border-red-400 focus:border-red-400" : "border-[#E5E2D9] focus:border-[#F4C430]"
-              }`}
+              className={`w-full pl-10 pr-4 py-2 sm:py-2.5 bg-white border rounded-lg text-[#121212] placeholder:text-[#6B6A63]/60 text-sm focus:outline-none transition-colors ${errors.name ? "border-red-400 focus:border-red-400" : "border-[#E5E2D9] focus:border-[#F4C430]"
+                }`}
             />
           </div>
           {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
@@ -125,9 +124,8 @@ function SignUp() {
               value={formData.email}
               onChange={handleChange}
               placeholder="you@example.com"
-              className={`w-full pl-10 pr-4 py-2 sm:py-2.5 bg-white border rounded-lg text-[#121212] placeholder:text-[#6B6A63]/60 text-sm focus:outline-none transition-colors ${
-                errors.email ? "border-red-400 focus:border-red-400" : "border-[#E5E2D9] focus:border-[#F4C430]"
-              }`}
+              className={`w-full pl-10 pr-4 py-2 sm:py-2.5 bg-white border rounded-lg text-[#121212] placeholder:text-[#6B6A63]/60 text-sm focus:outline-none transition-colors ${errors.email ? "border-red-400 focus:border-red-400" : "border-[#E5E2D9] focus:border-[#F4C430]"
+                }`}
             />
           </div>
           {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
@@ -146,14 +144,13 @@ function SignUp() {
               value={formData.password}
               onChange={handleChange}
               placeholder="At least 8 characters"
-              className={`w-full pl-10 pr-10 py-2 sm:py-2.5 bg-white border rounded-lg text-[#121212] placeholder:text-[#6B6A63]/60 text-sm focus:outline-none transition-colors ${
-                errors.password ? "border-red-400 focus:border-red-400" : "border-[#E5E2D9] focus:border-[#F4C430]"
-              }`}
+              className={`w-full pl-10 pr-10 py-2 sm:py-2.5 bg-white border rounded-lg text-[#121212] placeholder:text-[#6B6A63]/60 text-sm focus:outline-none transition-colors ${errors.password ? "border-red-400 focus:border-red-400" : "border-[#E5E2D9] focus:border-[#F4C430]"
+                }`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B6A63] hover:text-[#121212] transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B6A63] hover:text-[#121212] transition-colors cursor-pointer"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -164,7 +161,7 @@ function SignUp() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-[#F4C430] text-[#121212] py-2.5 rounded-lg font-medium text-sm hover:bg-[#e0b420] transition-colors mt-1 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full bg-[#F4C430] text-[#121212] py-2.5 rounded-lg font-medium text-sm hover:bg-[#e0b420] transition-colors mt-1 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
         >
           {isLoading ? "Creating account..." : "Create account"}
         </button>

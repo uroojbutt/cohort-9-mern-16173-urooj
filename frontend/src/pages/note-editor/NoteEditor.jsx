@@ -52,7 +52,7 @@ export default function NoteEditor() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await api.get(`/api/notes/${id}`);
+        const response = await api.get(`/notes/${id}`);
         if (!isMounted) return;
         // Adjust for potential nesting based on dashboard fetch logic
         const noteData = response.data.note || response.data;
@@ -96,9 +96,9 @@ export default function NoteEditor() {
 
     try {
       if (isEditMode) {
-        await api.put(`/api/notes/${id}`, payload);
+        await api.put(`/notes/${id}`, payload);
       } else {
-        await api.post("/api/notes", payload);
+        await api.post("/notes", payload);
       }
       navigate("/dashboard");
     } catch (err) {

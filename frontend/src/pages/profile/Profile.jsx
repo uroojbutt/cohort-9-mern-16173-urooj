@@ -71,7 +71,7 @@ function Profile() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={handleLogout}
-                            className="flex items-center justify-center gap-2 bg-[#F4C430] hover:bg-[#e0b428] text-white font-semibold py-3 px-8 rounded-2xl transition-all shadow-sm"
+                            className="flex items-center justify-center gap-2 bg-[#F4C430] hover:bg-[#e0b428] text-white font-semibold py-3 px-8 rounded-2xl transition-all shadow-sm cursor-pointer"
                         >
                             <LogOut size={18} />
                             Logout from account

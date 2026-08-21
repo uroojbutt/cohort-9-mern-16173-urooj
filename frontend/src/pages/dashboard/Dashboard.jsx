@@ -24,7 +24,7 @@ function Dashboard() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.get("/api/notes");
+      const response = await api.get("/notes");
       if (Array.isArray(response.data)) {
         setNotes(response.data);
       } else if (response.data && Array.isArray(response.data.notes)) {
@@ -48,7 +48,7 @@ function Dashboard() {
 
   const handleDelete = async (id) => {
   try {
-    await api.delete(`/api/notes/${id}`);
+    await api.delete(`/notes/${id}`);
     setNotes((currentNotes) => currentNotes.filter(n => n._id !== id));
   } catch (err) {
     console.error("Delete failed", err); //add alert when delete fails

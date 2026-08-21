@@ -19,9 +19,9 @@ function NoteCard({ note, index, handleDelete }) {
           {note.title || "Untitled"}
         </h3>
 
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+        <div className="flex gap-1">
           <Link
-            to={`/notes/${note._id}`}
+            to={`/notes/${note._id}/edit`}
             aria-label="Edit note"
             className="p-1.5 text-[#6B6A63] hover:text-[#F4C430] bg-white border border-transparent hover:border-[#E5E2D9] rounded-md transition-all shadow-sm"
           >
@@ -31,7 +31,7 @@ function NoteCard({ note, index, handleDelete }) {
           <button
             onClick={() => handleDelete(note._id)}
             aria-label="Delete note"
-            className="p-1.5 text-[#6B6A63] hover:text-red-500 bg-white border border-transparent hover:border-[#E5E2D9] rounded-md transition-all shadow-sm"
+            className="p-1.5 text-[#6B6A63] hover:text-red-500 bg-white border border-transparent hover:border-[#E5E2D9] rounded-md transition-all shadow-sm cursor-pointer"
           >
             <Trash2 size={14} />
           </button>
@@ -39,9 +39,16 @@ function NoteCard({ note, index, handleDelete }) {
       </div>
 
       {/* Content */}
-      <p className="text-[#6B6A63] text-sm flex-1 overflow-hidden whitespace-pre-wrap leading-relaxed">
-        {note.content || "No content..."}
-      </p>
+      {note.content ? (
+        <div 
+          className="text-[#6B6A63] text-sm flex-1 overflow-hidden whitespace-pre-wrap leading-relaxed prose prose-sm prose-p:my-0 max-w-none"
+          dangerouslySetInnerHTML={{ __html: note.content }}
+        />
+      ) : (
+        <p className="text-[#6B6A63] text-sm flex-1 overflow-hidden whitespace-pre-wrap leading-relaxed">
+          No content...
+        </p>
+      )}
 
       {/* Footer */}
       <div className="pt-4 mt-auto border-t border-[#E5E2D9]/60 flex justify-between items-center text-xs text-[#6B6A63]">
