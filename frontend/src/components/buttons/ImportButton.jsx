@@ -13,48 +13,51 @@ function ImportButton({ onImportSuccess }) {
   }
 
   async function handleFileChange(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    if (file.type !== "application/json") {
-      setError("Please select a valid JSON file.");
-      e.target.value = "";
-      return;
-    }
+  const isJson = file.type === "application/json" || file.name.endsWith(".json");
+  const isTxt = file.type === "text/plain" || file.name.endsWith(".txt");
 
-    setIsImporting(true);
-    setError(null);
-    setResult(null);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await api.post("/notes/import", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      const { imported = 0, skipped = 0 } = response.data || {};
-      setResult({ imported, skipped });
-      onImportSuccess?.();
-    } catch (err) {
-      console.error("Failed to import notes", err);
-      setError("Couldn't import notes. Please check the file and try again.");
-    } finally {
-      setIsImporting(false);
-      e.target.value = "";
-    }
+  if (!isJson && !isTxt) {
+    setError("Please select a valid JSON or TXT file.");
+    e.target.value = "";
+    return;
   }
+
+  setIsImporting(true);
+  setError(null);
+  setResult(null);
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await api.post("/notes/import", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    const { imported = 0, skipped = 0 } = response.data || {};
+    setResult({ imported, skipped });
+    onImportSuccess?.();
+  } catch (err) {
+    console.error("Failed to import notes", err);
+    setError("Couldn't import notes. Please check the file and try again.");
+  } finally {
+    setIsImporting(false);
+    e.target.value = "";
+  }
+}
 
   return (
     <div className="flex flex-col items-start">
       <input
         ref={fileInputRef}
         type="file"
-        accept="application/json,.json"
+        accept="application/json,.json,text/plain,.txt"
         onChange={handleFileChange}
         className="hidden"
-        aria-label="Import notes"
+        aria-label="Select JSON or TXT file to import"
         title="Import notes"
       />
       <button
