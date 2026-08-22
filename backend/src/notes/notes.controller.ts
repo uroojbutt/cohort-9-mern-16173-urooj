@@ -7,8 +7,14 @@ import {
   Body,
   Param,
   Req,
+  Res,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 import { NotesService } from './notes.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
@@ -37,6 +43,32 @@ export class NotesController {
     return this.notesService.findAll(req.user.userId);
   }
 
+  @Get('export')
+  async exportNotes(
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const data = await this.notesService.exportNotes(req.user.userId);
+    const date = new Date().toISOString().split('T')[0];
+    res.set({
+      'Content-Type': 'application/json',
+      'Content-Disposition': `attachment; filename="notes-export-${date}.json"`,
+    });
+    return data;
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  importNotes(
+    @Req() req: AuthenticatedRequest,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<{ imported: number; skipped: number }> {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.notesService.importNotes(req.user.userId, file.buffer);
+  }
+
   @Get(':id')
   findOne(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<Note> {
     return this.notesService.findOne(req.user.userId, id);
@@ -51,4 +83,4 @@ export class NotesController {
   remove(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<void> {
     return this.notesService.remove(req.user.userId, id);
   }
-}
+}

@@ -1,9 +1,12 @@
-import { Injectable, NotFoundException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 import { Note, NoteDocument } from './schemas/note.schema';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
+import { ImportNoteDto } from './dto/import-note.dto';
 
 @Injectable()
 export class NotesService {
@@ -82,5 +85,73 @@ export class NotesService {
     if (!result.deletedCount) {
       throw new NotFoundException('Note not found');
     }
+  }
+
+  async exportNotes(userId: string): Promise<{ exportedAt: string; count: number; notes: Note[] }> {
+    try {
+      const notes = await this.noteModel.find({ userId }).sort({ updatedAt: -1 }).exec();
+      return {
+        exportedAt: new Date().toISOString(),
+        count: notes.length,
+        notes,
+      };
+    } catch (err) {
+      this.logger.error(`Failed to export notes for user ${userId}`, err);
+      throw new InternalServerErrorException('Could not export notes');
+    }
+  }
+
+  async importNotes(userId: string, fileBuffer: Buffer): Promise<{ imported: number; skipped: number }> {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(fileBuffer.toString('utf-8'));
+    } catch {
+      throw new BadRequestException('Invalid JSON file');
+    }
+
+    const rawNotes: unknown[] | null = Array.isArray(parsed)
+      ? parsed
+      : Array.isArray((parsed as { notes?: unknown[] })?.notes)
+        ? (parsed as { notes: unknown[] }).notes
+        : null;
+
+    if (!rawNotes) {
+      throw new BadRequestException('Invalid import file format');
+    }
+
+    let imported = 0;
+    let skipped = 0;
+
+    for (const raw of rawNotes) {
+      const dto = plainToInstance(ImportNoteDto, raw);
+      const errors = await validate(dto);
+      if (errors.length > 0) {
+        skipped++;
+        continue;
+      }
+
+      if (dto._id) {
+        const existing = await this.noteModel.findOne({ _id: dto._id, userId }).exec();
+        if (existing) {
+          skipped++;
+          continue;
+        }
+      }
+
+      try {
+        await this.noteModel.create({
+          ...(dto._id ? { _id: new Types.ObjectId(dto._id) } : {}),
+          title: dto.title,
+          content: dto.content ?? '',
+          userId,
+        });
+        imported++;
+      } catch (err) {
+        this.logger.error(`Failed to import a note for user ${userId}`, err);
+        skipped++;
+      }
+    }
+
+    return { imported, skipped };
   }
 }
