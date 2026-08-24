@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
+import { expect } from 'chai';
+import * as sinon from 'sinon';
 import { UsersService } from './users.service';
 import { User } from './schemas/user.schema';
 
@@ -7,8 +9,8 @@ describe('UsersService', () => {
   let service: UsersService;
 
   const mockUserModel = {
-    create: jest.fn(),
-    findOne: jest.fn(),
+    create: sinon.stub(),
+    findOne: sinon.stub(),
   };
 
   beforeEach(async () => {
@@ -27,7 +29,11 @@ describe('UsersService', () => {
     }
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(service).to.exist;
   });
 });
