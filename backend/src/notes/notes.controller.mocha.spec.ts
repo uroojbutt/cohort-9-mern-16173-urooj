@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { expect } from 'chai';
+import * as sinon from 'sinon';
 import { NotesController, AuthenticatedRequest } from './notes.controller';
 import { NotesService } from './notes.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -13,12 +15,12 @@ describe('NotesController', () => {
     user: { userId: 'user-123', email: 'test@example.com' },
   };
 
-  const mockNotesService: jest.Mocked<Pick<NotesService, 'create' | 'findAll' | 'findOne' | 'update' | 'remove'>> = {
-    create: jest.fn(),
-    findAll: jest.fn(),
-    findOne: jest.fn(),
-    update: jest.fn(),
-    remove: jest.fn(),
+  const mockNotesService = {
+    create: sinon.stub(),
+    findAll: sinon.stub(),
+    findOne: sinon.stub(),
+    update: sinon.stub(),
+    remove: sinon.stub(),
   };
 
   beforeEach(async () => {
@@ -35,53 +37,53 @@ describe('NotesController', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    sinon.restore();
   });
 
   it('create should delegate to service with req.user.userId', async () => {
     const dto: CreateNoteDto = { title: 'Test', content: '<p>x</p>' };
-    mockNotesService.create.mockResolvedValue({ ...dto, userId: mockReq.user.userId } as any);
+    mockNotesService.create.resolves({ ...dto, userId: mockReq.user.userId });
 
     const result = await controller.create(mockReq, dto);
 
-    expect(service.create).toHaveBeenCalledWith(mockReq.user.userId, dto);
-    expect(result).toMatchObject(dto);
+    expect(service.create).to.have.been.calledWith(mockReq.user.userId, dto);
+    expect(result).to.deep.include(dto);
   });
 
   it('findAll should delegate to service with req.user.userId', async () => {
-    mockNotesService.findAll.mockResolvedValue([]);
+    mockNotesService.findAll.resolves([]);
 
     const result = await controller.findAll(mockReq);
 
-    expect(service.findAll).toHaveBeenCalledWith(mockReq.user.userId);
-    expect(result).toEqual([]);
+    expect(service.findAll).to.have.been.calledWith(mockReq.user.userId);
+    expect(result).to.deep.equal([]);
   });
 
   it('findOne should delegate to service with id and userId', async () => {
-    mockNotesService.findOne.mockResolvedValue({ _id: 'note-1' } as any);
+    mockNotesService.findOne.resolves({ _id: 'note-1' });
 
     const result = await controller.findOne(mockReq, 'note-1');
 
-    expect(service.findOne).toHaveBeenCalledWith(mockReq.user.userId, 'note-1');
-    expect(result).toEqual({ _id: 'note-1' });
+    expect(service.findOne).to.have.been.calledWith(mockReq.user.userId, 'note-1');
+    expect(result).to.deep.equal({ _id: 'note-1' });
   });
 
   it('update should delegate to service with id, userId and dto', async () => {
     const dto: UpdateNoteDto = { title: 'Updated' };
-    mockNotesService.update.mockResolvedValue({ _id: 'note-1', ...dto } as any);
+    mockNotesService.update.resolves({ _id: 'note-1', ...dto });
 
     const result = await controller.update(mockReq, 'note-1', dto);
 
-    expect(service.update).toHaveBeenCalledWith(mockReq.user.userId, 'note-1', dto);
-    expect(result).toMatchObject(dto);
+    expect(service.update).to.have.been.calledWith(mockReq.user.userId, 'note-1', dto);
+    expect(result).to.deep.include(dto);
   });
 
   it('remove should delegate to service with id and userId', async () => {
-    mockNotesService.remove.mockResolvedValue(undefined);
+    mockNotesService.remove.resolves(undefined);
 
     const result = await controller.remove(mockReq, 'note-1');
 
-    expect(service.remove).toHaveBeenCalledWith(mockReq.user.userId, 'note-1');
-    expect(result).toBeUndefined();
+    expect(service.remove).to.have.been.calledWith(mockReq.user.userId, 'note-1');
+    expect(result).to.be.undefined;
   });
 });
