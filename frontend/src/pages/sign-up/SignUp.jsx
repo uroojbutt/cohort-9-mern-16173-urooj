@@ -7,7 +7,6 @@ import { useAuth } from "../../context/AuthContext";
 
 function SignUp() {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
@@ -34,7 +33,7 @@ function SignUp() {
       newErrors.email = "Enter a valid email address";
     }
 
-    if (!formData.password) {
+    if (!formData.password.trim()) {
       newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
@@ -145,6 +144,7 @@ function SignUp() {
             />
             <button
               type="button"
+              aria-label="toggle password visibility"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B6A63] hover:text-[#121212] transition-colors cursor-pointer"
             >
