@@ -4,7 +4,6 @@ import { jest } from "@jest/globals";
 import NoteEditor from "../../src/pages/note-editor/NoteEditor";
 import api from "../../src/api/api";
 
-// Mock react-router-dom's useNavigate + useParams (mutable per test)
 const mockNavigate = jest.fn();
 const mockUseParams = jest.fn();
 jest.mock("react-router-dom", () => ({
@@ -12,7 +11,6 @@ jest.mock("react-router-dom", () => ({
   useParams: () => mockUseParams(),
 }));
 
-// Mock the api module
 jest.mock("../../src/api/api", () => ({
   __esModule: true,
   default: {
@@ -22,14 +20,9 @@ jest.mock("../../src/api/api", () => ({
   },
 }));
 
-// The toolbar has its own dedicated test file — stub it here.
 jest.mock("../../src/components/note-editor-toolbar/NoteEditorToolbar", () => () => (
   <div data-testid="toolbar" />
 ));
-
-// ProseMirror (which Tiptap wraps) doesn't run reliably inside jsdom, so we
-// stub the editor instance and only the members NoteEditor actually calls:
-// commands.setContent, commands.focus, and getHTML.
 const mockSetContent = jest.fn();
 const mockFocus = jest.fn();
 const mockGetHTML = jest.fn(() => "<p>note body</p>");
@@ -55,7 +48,7 @@ jest.mock("@tiptap/extension-placeholder", () => ({
 describe("NoteEditor", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseParams.mockReturnValue({}); // create mode by default
+    mockUseParams.mockReturnValue({}); 
   });
 
   describe("create mode", () => {

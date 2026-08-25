@@ -5,19 +5,15 @@ import SignUp from "../../src/pages/sign-up/SignUp";
 import api from "../../src/api/api";
 import { useAuth } from "../../src/context/AuthContext";
 
-// Mock react-router-dom's useNavigate + Link
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
 }));
 
-// Mock the AuthLayout wrapper to just render children
 jest.mock("../../src/components/auth-layout/AuthLayout", () => ({ children }) => (
   <div>{children}</div>
 ));
-
-// Mock the api module
 jest.mock("../../src/api/api", () => ({
   __esModule: true,
   default: {
@@ -28,7 +24,6 @@ jest.mock("../../src/api/api", () => ({
   },
 }));
 
-// Mock AuthContext's useAuth hook (SignUp destructures it even if unused for login)
 jest.mock("../../src/context/AuthContext", () => ({
   useAuth: jest.fn(),
 }));
@@ -187,7 +182,6 @@ describe("SignUp", () => {
       });
     });
 
-    // Signup does NOT auto-login the user, it redirects to the login page
     expect(mockLogin).not.toHaveBeenCalled();
     expect(mockNavigate).toHaveBeenCalledWith("/login");
   });
@@ -269,7 +263,7 @@ describe("SignUp", () => {
 
     const submitButton = screen.getByRole("button", { name: /create account/i });
     await user.click(submitButton);
-    await user.click(submitButton); // second click while disabled
+    await user.click(submitButton); 
 
     resolvePromise({ data: {} });
 

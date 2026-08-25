@@ -5,19 +5,16 @@ import Login from "../../src/pages/login/Login";
 import api from "../../src/api/api";
 import { useAuth } from "../../src/context/AuthContext";
 
-// Mock react-router-dom's useNavigate + Link
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
 }));
 
-// Mock the AuthLayout wrapper to just render children
 jest.mock("../../src/components/auth-layout/AuthLayout", () => ({ children }) => (
   <div>{children}</div>
 ));
 
-// Mock the api module
 jest.mock("../../src/api/api", () => ({
   __esModule: true,
   default: {
@@ -28,7 +25,6 @@ jest.mock("../../src/api/api", () => ({
   },
 }));
 
-// Mock AuthContext's useAuth hook
 jest.mock("../../src/context/AuthContext", () => ({
   useAuth: jest.fn(),
 }));
@@ -175,8 +171,7 @@ describe("Login", () => {
 
     render(<Login />);
 
-    // type="email" inputs strip leading/trailing whitespace at the DOM level
-    // before our validation code ever sees the value.
+  
     await user.type(screen.getByLabelText(/email address/i), " test@example.com ");
     await user.type(screen.getByLabelText(/^password$/i), "password123");
     await user.click(screen.getByRole("button", { name: /log in/i }));
@@ -248,7 +243,7 @@ describe("Login", () => {
 
     const submitButton = screen.getByRole("button", { name: /log in/i });
     await user.click(submitButton);
-    await user.click(submitButton); // second click while disabled
+    await user.click(submitButton); 
 
     resolvePromise({
       data: { access_token: "fake-token", user: { id: "1", email: "test@example.com" } },

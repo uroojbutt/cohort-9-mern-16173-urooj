@@ -5,13 +5,11 @@ import Dashboard from "../../src/pages/dashboard/Dashboard";
 import api from "../../src/api/api";
 import { useAuth } from "../../src/context/AuthContext";
 
-// Mock react-router-dom's useNavigate
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// Mock the api module
 jest.mock("../../src/api/api", () => ({
   __esModule: true,
   default: {
@@ -22,14 +20,10 @@ jest.mock("../../src/api/api", () => ({
   },
 }));
 
-// Mock AuthContext's useAuth hook
 jest.mock("../../src/context/AuthContext", () => ({
   useAuth: jest.fn(),
 }));
 
-// Mock child components as simple stubs so this file tests Dashboard's
-// own logic (fetching, filtering, delete, logout) without depending on
-// their internal rendering details.
 jest.mock("../../src/components/header/Header", () => (props) => (
   <div data-testid="header">
     <span>{props.user?.name}</span>

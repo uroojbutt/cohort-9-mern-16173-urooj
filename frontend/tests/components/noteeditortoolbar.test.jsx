@@ -3,9 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { jest } from "@jest/globals";
 import NoteEditorToolbar from "../../src/components/note-editor-toolbar/NoteEditorToolbar";
 
-// Builds a chainable mock that mimics editor.chain().focus().toggleX().run().
-// Every method returns the same chain object so calls can be composed just
-// like the real Tiptap chain, and every call is a jest.fn() we can assert on.
 function createChainMock() {
   const chain = {};
   const methods = [
@@ -26,7 +23,6 @@ function createChainMock() {
   return chain;
 }
 
-// activeStates keys: "bold", "italic", "strike", "heading:2", "bulletList", "orderedList"
 function createMockEditor({ activeStates = {}, canUndo = true, canRedo = true } = {}) {
   const chain = createChainMock();
   const editor = {
@@ -150,8 +146,6 @@ describe("NoteEditorToolbar", () => {
     const boldButton = screen.getByRole("button", { name: "Bold" });
     const wasNotCancelled = fireEvent.mouseDown(boldButton);
 
-    // fireEvent's return value mirrors dispatchEvent(): false means
-    // preventDefault() was called on the event.
     expect(wasNotCancelled).toBe(false);
   });
 });
