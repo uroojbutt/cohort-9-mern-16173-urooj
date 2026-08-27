@@ -33,9 +33,7 @@ function ImportButton({ onImportSuccess }) {
   formData.append("file", file);
 
   try {
-    const response = await api.post("/notes/import", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await api.post("/notes/import", formData);
 
     const { imported = 0, skipped = 0 } = response.data || {};
     setResult({ imported, skipped });

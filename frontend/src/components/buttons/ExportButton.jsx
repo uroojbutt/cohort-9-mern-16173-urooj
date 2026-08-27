@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import api from "../../api/api";
 
-function ExportButton({ disabled }) {
+function ExportButton({ disabled = false }) {
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState(null);
 
