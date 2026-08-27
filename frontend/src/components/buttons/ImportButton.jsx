@@ -74,7 +74,7 @@ function ImportButton({ onImportSuccess }) {
       {result && (
         <p className="text-xs text-[#121212]/70 mt-1">
           Imported {result.imported} note{result.imported !== 1 ? "s" : ""}
-          {result.skipped > 0 ? `, skipped ${result.skipped} duplicate${result.skipped !== 1 ? "s" : ""}` : ""}.
+          {result.skipped > 0 ? `, skipped ${result.skipped} note${result.skipped !== 1 ? "s" : ""}` : ""}.
         </p>
       )}
     </div>

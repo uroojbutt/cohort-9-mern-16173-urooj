@@ -8,6 +8,14 @@ import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { ImportNoteDto } from './dto/import-note.dto';
 
+export interface ExportNotesResponse {
+  exportedAt: string;
+  count: number;
+  notes: Note[];
+}
+
+const MAX_IMPORT_RECORDS = 500;
+
 @Injectable()
 export class NotesService {
   private readonly logger = new Logger(NotesService.name);
@@ -87,7 +95,7 @@ export class NotesService {
     }
   }
 
-  async exportNotes(userId: string): Promise<{ exportedAt: string; count: number; notes: Note[] }> {
+  async exportNotes(userId: string): Promise<ExportNotesResponse> {
     try {
       const notes = await this.noteModel.find({ userId }).sort({ updatedAt: -1 }).exec();
       return {
@@ -100,8 +108,72 @@ export class NotesService {
       throw new InternalServerErrorException('Could not export notes');
     }
   }
+  async importNotes(userId: string, fileBuffer: Buffer, filename: string): Promise<{ imported: number; skipped: number }> {
+  const isTxt = filename.toLowerCase().endsWith('.txt');
 
-  async importNotes(userId: string, fileBuffer: Buffer): Promise<{ imported: number; skipped: number }> {
+  const rawNotes: unknown[] = isTxt
+    ? this.parseTxtNotes(fileBuffer.toString('utf-8'))
+    : this.parseJsonNotes(fileBuffer);
+
+  if (rawNotes.length > MAX_IMPORT_RECORDS) {
+    throw new BadRequestException(`Cannot import more than ${MAX_IMPORT_RECORDS} notes at once`);
+  }
+
+  const session = await this.noteModel.db.startSession();
+  let imported = 0;
+  let skipped = 0;
+
+  try {
+    await session.withTransaction(async () => {
+      imported = 0;
+      skipped = 0;
+
+      for (const raw of rawNotes) {
+        const dto = plainToInstance(ImportNoteDto, raw);
+        const errors = await validate(dto);
+        if (errors.length > 0) {
+          skipped++;
+          continue;
+        }
+
+        if (dto._id) {
+          const existing = await this.noteModel
+            .findOne({ _id: dto._id, userId })
+            .session(session)
+            .exec();
+          if (existing) {
+            skipped++;
+            continue;
+          }
+        }
+
+        await this.noteModel.create(
+          [
+            {
+              ...(dto._id ? { _id: new Types.ObjectId(dto._id) } : {}),
+              title: dto.title,
+              content: dto.content ?? '',
+              userId,
+            },
+          ],
+          { session },
+        );
+        imported++;
+      }
+    });
+  } catch (err) {
+    this.logger.error(`Import transaction failed for user ${userId}`, err);
+    throw new InternalServerErrorException('Could not complete import');
+  } finally {
+    await session.endSession();
+  }
+
+  return { imported, skipped };
+}
+
+
+
+  private parseJsonNotes(fileBuffer: Buffer): unknown[] {
     let parsed: unknown;
     try {
       parsed = JSON.parse(fileBuffer.toString('utf-8'));
@@ -118,40 +190,24 @@ export class NotesService {
     if (!rawNotes) {
       throw new BadRequestException('Invalid import file format');
     }
-
-    let imported = 0;
-    let skipped = 0;
-
-    for (const raw of rawNotes) {
-      const dto = plainToInstance(ImportNoteDto, raw);
-      const errors = await validate(dto);
-      if (errors.length > 0) {
-        skipped++;
-        continue;
-      }
-
-      if (dto._id) {
-        const existing = await this.noteModel.findOne({ _id: dto._id, userId }).exec();
-        if (existing) {
-          skipped++;
-          continue;
-        }
-      }
-
-      try {
-        await this.noteModel.create({
-          ...(dto._id ? { _id: new Types.ObjectId(dto._id) } : {}),
-          title: dto.title,
-          content: dto.content ?? '',
-          userId,
-        });
-        imported++;
-      } catch (err) {
-        this.logger.error(`Failed to import a note for user ${userId}`, err);
-        skipped++;
-      }
-    }
-
-    return { imported, skipped };
+    return rawNotes;
   }
+
+  private parseTxtNotes(text: string): unknown[] {
+  const blocks = text
+    .split(/\n===NOTE===\n/)
+    .map((b) => b.trim())
+    .filter((b) => b.length > 0);
+
+  if (blocks.length === 0) {
+    throw new BadRequestException('Invalid or empty TXT file');
+  }
+
+  return blocks.map((block) => {
+    const lines = block.split('\n');
+    const title = lines[0]?.trim() ?? '';
+    const content = lines.slice(1).join('\n').trim();
+    return { title, content };
+  });
+}
 }
