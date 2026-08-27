@@ -8,7 +8,7 @@ function Header({ user, handleLogout }) {
           <div className="relative inline-block mt-1">
             <span className="absolute left-[-6px] right-[-4px] top-[45%] h-[40%] bg-[#F4C430] -skew-x-6 z-0" />
             <span className="relative z-10 text-xl font-display font-semibold tracking-tight text-[#121212]">
-              Notes
+              Notesify
             </span>
           </div>
         </div>
@@ -33,7 +33,7 @@ function Header({ user, handleLogout }) {
 
           <button
             onClick={handleLogout}
-            className="p-2 text-[#6B6A63] hover:text-[#121212] hover:bg-[#E5E2D9]/50 rounded-lg transition-colors flex items-center gap-1.5"
+            className="p-2 text-[#6B6A63] hover:text-[#121212] hover:bg-[#E5E2D9]/50 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
             title="Log out"
           >
             <LogOut size={18} />

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,7 +22,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isAuthRoute = error.config?.url?.includes("/auth/login") || error.config?.url?.includes("/auth/signup");
+    
+    if (error.response?.status === 401 && !isAuthRoute) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       window.location.href = "/login";

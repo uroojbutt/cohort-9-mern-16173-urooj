@@ -49,12 +49,12 @@ function Login() {
 
     setIsLoading(true);
     try {
-      const response = await api.post("/api/auth/login", {
+      const response = await api.post("/auth/login", {
         email: formData.email,
         password: formData.password,
       });
 
-      const { token, user } = response.data;
+      const { access_token: token, user } = response.data;
       login(user, token); // updates AuthContext + writes to localStorage
 
       navigate("/dashboard");
@@ -130,7 +130,7 @@ function Login() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B6A63] hover:text-[#121212] transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B6A63] hover:text-[#121212] transition-colors cursor-pointer"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -141,7 +141,7 @@ function Login() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-[#F4C430] text-[#121212] py-2.5 rounded-lg font-medium text-sm hover:bg-[#e0b420] transition-colors mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full bg-[#F4C430] text-[#121212] py-2.5 rounded-lg font-medium text-sm hover:bg-[#e0b420] transition-colors mt-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
         >
           {isLoading ? "Logging in..." : "Log in"}
         </button>
