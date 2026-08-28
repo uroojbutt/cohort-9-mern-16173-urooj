@@ -7,6 +7,9 @@ import DashboardActions from "../../components/dashboard-actions/DashboardAction
 import LoadingSpinner from "../../components/loading-spinner/LoadingSpinner";
 import EmptyState from "../../components/empty-state/EmptyState";
 import NotesGrid from "../../components/notes-grid/NotesGrid";
+import ExportButton from "../../components/buttons/ExportButton";
+import ImportButton from "../../components/buttons/ImportButton";
+
 
 function Dashboard() {
   const { user, logout } = useAuth();
@@ -47,15 +50,15 @@ function Dashboard() {
   };
 
   const handleDelete = async (id) => {
-  try {
-    await api.delete(`/notes/${id}`);
-    setNotes((currentNotes) => currentNotes.filter(n => n._id !== id));
-  } catch (err) {
-    console.error("Delete failed", err); //add alert when delete fails
-    alert("Failed to delete note");
+    try {
+      await api.delete(`/notes/${id}`);
+      setNotes((currentNotes) => currentNotes.filter(n => n._id !== id));
+    } catch (err) {
+      console.error("Delete failed", err); //add alert when delete fails
+      alert("Failed to delete note");
 
-  }
-};
+    }
+  };
 
   const filteredNotes = Array.isArray(notes) ? notes.filter(
     (note) =>
@@ -86,24 +89,30 @@ function Dashboard() {
           setSearchQuery={setSearchQuery}
         />
 
+        {/* Import / Export Toolbar */}
+        <div className="flex items-center justify-end gap-3 pb-4 mb-6 border-b border-[#121212]/10">
+          <ExportButton disabled={filteredNotes.length === 0} />
+          <ImportButton onImportSuccess={fetchNotes} />
+        </div>
+
         {/* Notes List */}
         {isLoading ? (
-  <LoadingSpinner />
-) : error ? (
-  <div className="text-center py-20 text-[#6B6A63]">
-    <p className="mb-4">{error}</p>
-    <button
-      onClick={fetchNotes}
-      className="px-4 py-2 bg-[#F4C430] text-[#121212] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
-    >
-      Retry
-    </button>
-  </div>
-) : filteredNotes.length === 0 ? (
-  <EmptyState searchQuery={searchQuery} />
-) : (
-  <NotesGrid filteredNotes={filteredNotes} handleDelete={handleDelete} />
-)}
+          <LoadingSpinner />
+        ) : error ? (
+          <div className="text-center py-20 text-[#6B6A63]">
+            <p className="mb-4">{error}</p>
+            <button
+              onClick={fetchNotes}
+              className="px-4 py-2 bg-[#F4C430] text-[#121212] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              Retry
+            </button>
+          </div>
+        ) : filteredNotes.length === 0 ? (
+          <EmptyState searchQuery={searchQuery} />
+        ) : (
+          <NotesGrid filteredNotes={filteredNotes} handleDelete={handleDelete} />
+        )}
       </main>
     </div>
   );
