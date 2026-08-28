@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { NotFoundException } from '@nestjs/common';
+import {
+  NotFoundException,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
@@ -13,6 +17,7 @@ type MockNoteModel = sinon.SinonStub & {
   findOne: sinon.SinonStub;
   findOneAndUpdate: sinon.SinonStub;
   deleteOne: sinon.SinonStub;
+  create: sinon.SinonStub;
 };
 
 const mockNote = {
@@ -56,6 +61,7 @@ describe('NotesService', () => {
     model.findOne = sinon.stub();
     model.findOneAndUpdate = sinon.stub();
     model.deleteOne = sinon.stub();
+    model.create = sinon.stub();
   });
 
   afterEach(() => {
@@ -70,6 +76,27 @@ describe('NotesService', () => {
       expect(model).to.have.been.calledWith({ ...dto, userId: mockNote.userId });
       expect(result).to.deep.include(dto);
     });
+
+    it('should throw InternalServerErrorException when save fails', async () => {
+      const failingConstructor = sinon.stub().callsFake(() => ({
+        save: sinon.stub().rejects(new Error('DB write failed')),
+      })) as unknown as MockNoteModel;
+
+      const module: TestingModule = await Test.createTestingModule({
+        providers: [
+          NotesService,
+          { provide: getModelToken(Note.name), useValue: failingConstructor },
+        ],
+      }).compile();
+      const failingService = module.get<NotesService>(NotesService);
+
+      try {
+        await failingService.create(mockNote.userId, { title: 'x', content: 'y' });
+        expect.fail('Expected InternalServerErrorException to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(InternalServerErrorException);
+      }
+    });
   });
 
   describe('findAll', () => {
@@ -83,6 +110,18 @@ describe('NotesService', () => {
       expect(model.find).to.have.been.calledWith({ userId: mockNote.userId });
       expect(sort).to.have.been.calledWith({ updatedAt: -1 });
       expect(result).to.deep.equal([mockNote]);
+    });
+
+    it('should throw InternalServerErrorException when query fails', async () => {
+      const sort = sinon.stub().returns({ exec: sinon.stub().rejects(new Error('DB error')) });
+      model.find.returns({ sort });
+
+      try {
+        await service.findAll(mockNote.userId);
+        expect.fail('Expected InternalServerErrorException to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(InternalServerErrorException);
+      }
     });
   });
 
@@ -120,6 +159,18 @@ describe('NotesService', () => {
         expect(err).to.be.instanceOf(NotFoundException);
       }
     });
+
+    it('should throw InternalServerErrorException when query fails', async () => {
+      const exec = sinon.stub().rejects(new Error('DB error'));
+      model.findOne.returns({ exec });
+
+      try {
+        await service.findOne(mockNote.userId, mockNote._id);
+        expect.fail('Expected InternalServerErrorException to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(InternalServerErrorException);
+      }
+    });
   });
 
   describe('update', () => {
@@ -140,6 +191,15 @@ describe('NotesService', () => {
       expect(result).to.deep.equal(updated);
     });
 
+    it('should throw NotFoundException for an invalid id', async () => {
+      try {
+        await service.update(mockNote.userId, 'invalid-id', { title: 'x' });
+        expect.fail('Expected NotFoundException to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(NotFoundException);
+      }
+    });
+
     it('should throw NotFoundException when note is not found', async () => {
       const exec = sinon.stub().resolves(null);
       model.findOneAndUpdate.returns({ exec });
@@ -149,6 +209,18 @@ describe('NotesService', () => {
         expect.fail('Expected NotFoundException to be thrown');
       } catch (err) {
         expect(err).to.be.instanceOf(NotFoundException);
+      }
+    });
+
+    it('should throw InternalServerErrorException when query fails', async () => {
+      const exec = sinon.stub().rejects(new Error('DB error'));
+      model.findOneAndUpdate.returns({ exec });
+
+      try {
+        await service.update(mockNote.userId, mockNote._id, { title: 'x' });
+        expect.fail('Expected InternalServerErrorException to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(InternalServerErrorException);
       }
     });
   });
@@ -167,6 +239,15 @@ describe('NotesService', () => {
       });
     });
 
+    it('should throw NotFoundException for an invalid id', async () => {
+      try {
+        await service.remove(mockNote.userId, 'invalid-id');
+        expect.fail('Expected NotFoundException to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(NotFoundException);
+      }
+    });
+
     it('should throw NotFoundException when nothing was deleted', async () => {
       const exec = sinon.stub().resolves({ deletedCount: 0 });
       model.deleteOne.returns({ exec });
@@ -177,6 +258,116 @@ describe('NotesService', () => {
       } catch (err) {
         expect(err).to.be.instanceOf(NotFoundException);
       }
+    });
+
+    it('should throw InternalServerErrorException when query fails', async () => {
+      const exec = sinon.stub().rejects(new Error('DB error'));
+      model.deleteOne.returns({ exec });
+
+      try {
+        await service.remove(mockNote.userId, mockNote._id);
+        expect.fail('Expected InternalServerErrorException to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(InternalServerErrorException);
+      }
+    });
+  });
+
+  describe('exportNotes', () => {
+    it('should return exported notes with metadata', async () => {
+      const exec = sinon.stub().resolves([mockNote]);
+      const sort = sinon.stub().returns({ exec });
+      model.find.returns({ sort });
+
+      const result = await service.exportNotes(mockNote.userId);
+
+      expect(result.count).to.equal(1);
+      expect(result.notes).to.deep.equal([mockNote]);
+      expect(result.exportedAt).to.be.a('string');
+    });
+
+    it('should throw InternalServerErrorException when query fails', async () => {
+      const sort = sinon.stub().returns({ exec: sinon.stub().rejects(new Error('DB error')) });
+      model.find.returns({ sort });
+
+      try {
+        await service.exportNotes(mockNote.userId);
+        expect.fail('Expected InternalServerErrorException to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(InternalServerErrorException);
+      }
+    });
+  });
+
+  describe('importNotes', () => {
+    it('should throw BadRequestException for invalid JSON', async () => {
+      const buffer = Buffer.from('{not valid json', 'utf-8');
+
+      try {
+        await service.importNotes(mockNote.userId, buffer);
+        expect.fail('Expected BadRequestException to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(BadRequestException);
+      }
+    });
+
+    it('should throw BadRequestException for an unrecognized file format', async () => {
+      const buffer = Buffer.from(JSON.stringify({ foo: 'bar' }), 'utf-8');
+
+      try {
+        await service.importNotes(mockNote.userId, buffer);
+        expect.fail('Expected BadRequestException to be thrown');
+      } catch (err) {
+        expect(err).to.be.instanceOf(BadRequestException);
+      }
+    });
+
+    it('should skip notes that fail DTO validation', async () => {
+      const buffer = Buffer.from(JSON.stringify([{ content: 'no title' }]), 'utf-8');
+
+      const result = await service.importNotes(mockNote.userId, buffer);
+
+      expect(result).to.deep.equal({ imported: 0, skipped: 1 });
+      expect(model.create.called).to.be.false;
+    });
+
+    it('should skip a note whose _id already exists for the user', async () => {
+      const buffer = Buffer.from(
+        JSON.stringify([{ _id: mockNote._id, title: 'Dup', content: 'x' }]),
+        'utf-8',
+      );
+      const exec = sinon.stub().resolves(mockNote);
+      model.findOne.returns({ exec });
+
+      const result = await service.importNotes(mockNote.userId, buffer);
+
+      expect(result).to.deep.equal({ imported: 0, skipped: 1 });
+      expect(model.create.called).to.be.false;
+    });
+
+    it('should import a valid new note (accepts { notes: [...] } wrapper too)', async () => {
+      const buffer = Buffer.from(
+        JSON.stringify({ notes: [{ title: 'Imported', content: 'body' }] }),
+        'utf-8',
+      );
+      model.create.resolves(mockNote);
+
+      const result = await service.importNotes(mockNote.userId, buffer);
+
+      expect(result).to.deep.equal({ imported: 1, skipped: 0 });
+      expect(model.create.calledOnce).to.be.true;
+    });
+
+    it('should skip and log when create throws for a note', async () => {
+      const buffer = Buffer.from(
+        JSON.stringify([{ title: 'Imported', content: 'body' }]),
+        'utf-8',
+      );
+      model.create.rejects(new Error('DB write failed'));
+
+      const result = await service.importNotes(mockNote.userId, buffer);
+
+      expect(result).to.deep.equal({ imported: 0, skipped: 1 });
     });
   });
 });

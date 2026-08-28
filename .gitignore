@@ -132,3 +132,5 @@ dist-ssr/
 .idea/
 # .gitignore
 .scannerwork/
+.nyc_output/
+coverage/

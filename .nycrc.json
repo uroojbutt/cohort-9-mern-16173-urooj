@@ -1,0 +1,7 @@
+{
+  "extension": [".ts"],
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.mocha.spec.ts", "src/**/*.spec.ts"],
+  "reporter": ["text", "lcov"],
+  "report-dir": "./coverage"
+}
