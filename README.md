@@ -1,18 +1,3 @@
-You have a sharp eye—and you are 100% right. It screams "AI-generated."
-
-Here is why it feels off:
-
-* **Emoji Overload**: Bullet points starting with 🔐, ✍️, 📊, 📤, 🛡️, 📝, 🧪, 🛠️ look like a typical LLM template.
-* **Marketing Buzzwords**: Words like *"Modern"*, *"Premium"*, *"Sleek and responsive"*, and *"Glassmorphism aesthetics"* sound like a product pitch rather than real developer documentation.
-* **Over-explained Sections**: Spending multiple paragraphs explaining standard setup steps or basic JWT auth makes it read like a tutorial instead of an engineering repo.
-
-Here is a lean, professional version. It strips out the AI fluff, keeps the technical accuracy, and speaks like an engineer writing docs for other engineers.
-
----
-
-### 📄 Updated `README.md` (Human/Developer Style)
-
-```markdown
 # Notesify — MERN Rich-Text Notes Application
 
 Notesify is a full-stack notes management application built with NestJS on the backend and React 19 + Vite on the frontend. It supports JWT authentication, rich-text editing, and bulk import/export of user notes.
