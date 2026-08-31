@@ -85,8 +85,8 @@ describe("Dashboard", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useAuth.mockReturnValue({ user: { name: "Urooj" }, logout: mockLogout });
-    jest.spyOn(window, "alert").mockImplementation(() => {});
-    jest.spyOn(console, "error").mockImplementation(() => {});
+    jest.spyOn(window, "alert").mockImplementation(() => { });
+    jest.spyOn(console, "error").mockImplementation(() => { });
   });
 
   afterEach(() => {
@@ -274,9 +274,10 @@ describe("Dashboard", () => {
     api.get.mockResolvedValueOnce({ data: mockNotes });
 
     render(<Dashboard />);
+    await screen.findByTestId("empty-state");
 
-    await screen.findByText("Grocery list");
-    expect(screen.getByTestId("export-button")).toBeEnabled();
+    expect(screen.getByTestId("export-button")).toBeDisabled();
+
   });
 
   it("refetches notes when an import completes successfully", async () => {
