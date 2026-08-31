@@ -7,9 +7,15 @@ import {
   Body,
   Param,
   Req,
+  Res,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
-import { NotesService } from './notes.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
+import { NotesService, ExportNotesResponse } from './notes.service';
 import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -37,6 +43,37 @@ export class NotesController {
     return this.notesService.findAll(req.user.userId);
   }
 
+  @Get('export')
+  async exportNotes(
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ExportNotesResponse> {
+    const data = await this.notesService.exportNotes(req.user.userId);
+    const date = new Date().toISOString().split('T')[0];
+    res.set({
+      'Content-Type': 'application/json',
+      'Content-Disposition': `attachment; filename="notes-export-${date}.json"`,
+      'Cache-Control': 'no-store',
+    });
+    return data;
+  }
+
+  @Post('import')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    }),
+  )
+  importNotes(
+  @Req() req: AuthenticatedRequest,
+  @UploadedFile() file: Express.Multer.File,
+): Promise<{ imported: number; skipped: number }> {
+  if (!file) {
+    throw new BadRequestException('No file uploaded');
+  }
+  return this.notesService.importNotes(req.user.userId, file.buffer, file.originalname);
+}
+
   @Get(':id')
   findOne(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<Note> {
     return this.notesService.findOne(req.user.userId, id);
@@ -51,4 +88,4 @@ export class NotesController {
   remove(@Req() req: AuthenticatedRequest, @Param('id') id: string): Promise<void> {
     return this.notesService.remove(req.user.userId, id);
   }
-}
+}
