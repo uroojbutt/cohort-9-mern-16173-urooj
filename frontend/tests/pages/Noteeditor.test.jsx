@@ -26,16 +26,17 @@ jest.mock("../../src/components/note-editor-toolbar/NoteEditorToolbar", () => ()
 const mockSetContent = jest.fn();
 const mockFocus = jest.fn();
 const mockGetHTML = jest.fn(() => "<p>note body</p>");
+const mockEditor = {
+  commands: {
+    setContent: (...args) => mockSetContent(...args),
+    focus: (...args) => mockFocus(...args),
+  },
+  getHTML: (...args) => mockGetHTML(...args),
+  isActive: () => false,
+};
 
 jest.mock("@tiptap/react", () => ({
-  useEditor: () => ({
-    commands: {
-      setContent: (...args) => mockSetContent(...args),
-      focus: (...args) => mockFocus(...args),
-    },
-    getHTML: (...args) => mockGetHTML(...args),
-    isActive: () => false,
-  }),
+  useEditor: () => mockEditor,
   EditorContent: () => <div data-testid="editor-content" />,
 }));
 
@@ -214,6 +215,7 @@ describe("NoteEditor", () => {
       await waitFor(() => {
         expect(screen.queryByRole("status")).not.toBeInTheDocument();
       });
+      expect(api.get).toHaveBeenCalledTimes(1);
     });
 
     it("populates the title and editor content from a { note: {...} } response", async () => {
@@ -228,6 +230,7 @@ describe("NoteEditor", () => {
       ).toBeInTheDocument();
       expect(mockSetContent).toHaveBeenCalledWith("<p>old</p>");
       expect(api.get).toHaveBeenCalledWith("/notes/note-1");
+      expect(api.get).toHaveBeenCalledTimes(1);
     });
 
     it("populates the title and editor content from a flat response (no wrapper)", async () => {
@@ -239,6 +242,7 @@ describe("NoteEditor", () => {
 
       expect(await screen.findByDisplayValue("Flat note")).toBeInTheDocument();
       expect(mockSetContent).toHaveBeenCalledWith("<p>flat</p>");
+      expect(api.get).toHaveBeenCalledTimes(1);
     });
 
     it("shows a 'Note not found' message on a 404 response", async () => {
@@ -247,6 +251,7 @@ describe("NoteEditor", () => {
       render(<NoteEditor />);
 
       expect(await screen.findByText(/note not found/i)).toBeInTheDocument();
+      expect(api.get).toHaveBeenCalledTimes(1);
     });
 
     it("shows a generic error message on a non-404 fetch failure", async () => {
@@ -257,6 +262,7 @@ describe("NoteEditor", () => {
       expect(
         await screen.findByText(/couldn't load this note. please try again/i),
       ).toBeInTheDocument();
+      expect(api.get).toHaveBeenCalledTimes(1);
     });
 
     it("updates the existing note via PUT and navigates to the dashboard", async () => {
@@ -278,6 +284,7 @@ describe("NoteEditor", () => {
         });
       });
       expect(mockNavigate).toHaveBeenCalledWith("/dashboard");
+      expect(api.get).toHaveBeenCalledTimes(1);
     });
   });
 });

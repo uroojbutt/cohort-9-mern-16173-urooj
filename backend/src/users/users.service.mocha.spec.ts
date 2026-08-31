@@ -2,13 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
+import { Model } from 'mongoose';
 import { UsersService } from './users.service';
 import { User } from './schemas/user.schema';
 
 describe('UsersService', () => {
   let service: UsersService;
 
-  const mockUserModel = {
+  const mockUserModel: Record<'create' | 'findOne', sinon.SinonStub> &
+    Partial<Model<User>> = {
     create: sinon.stub(),
     findOne: sinon.stub(),
   };

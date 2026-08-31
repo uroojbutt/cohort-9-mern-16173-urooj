@@ -14,9 +14,7 @@
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "mocha",
-    "test:cov": "nyc mocha",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
-
+    "test:cov": "nyc mocha"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -46,27 +44,30 @@
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
     "@types/bcrypt": "^6.0.0",
-    "@types/chai": "^5.2.3",
+    "@types/chai": "^4.3.20",
     "@types/express": "^5.0.0",
+    "@types/jest": "^29.5.13",
     "@types/mocha": "^10.0.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^24.0.0",
     "@types/passport-jwt": "^4.0.1",
     "@types/sinon": "^22.0.0",
-    "@types/sinon-chai": "^4.0.0",
+    "@types/sinon-chai": "^3.2.12",
     "@types/supertest": "^7.0.0",
-    "chai": "^6.2.2",
+    "chai": "^4.5.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^17.0.0",
+    "jest": "^29.7.0",
     "mocha": "^11.8.0",
     "nyc": "^18.0.0",
     "prettier": "^3.4.2",
     "sinon": "^22.1.0",
-    "sinon-chai": "^4.0.1",
+    "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
@@ -74,5 +75,6 @@
     "typescript-eslint": "^8.20.0"
   },
   "engines": {
-    "node": ">=18.0.0"  }
+    "node": ">=20.0.0"
+  }
 }

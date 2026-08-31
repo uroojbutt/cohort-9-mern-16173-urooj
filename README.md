@@ -15,7 +15,7 @@ Notesify is a full-stack notes management application built with NestJS on the b
 
 *   **Backend**: NestJS (v11), TypeScript, Mongoose (MongoDB), Passport.js
 *   **Frontend**: React 19, Vite, Tailwind CSS v4, Framer Motion, Tiptap, Axios
-*   **Testing**: 
+*   **Testing**:
     *   Backend: Mocha, Chai, Sinon, NYC
     *   Frontend: Jest, React Testing Library
 
@@ -46,7 +46,7 @@ cohort-9-mern-16173-urooj/
 
 ### Prerequisites
 
-* Node.js (v18+)
+* Node.js (v20+)
 * MongoDB (Local or Atlas)
 
 ### 1. Backend Setup
@@ -111,17 +111,6 @@ Run frontend tests:
 npm run test
 
 ```
-4.  Run the application in development mode:
-```bash
-    npm run start:dev
-```
-5.  To execute backend unit tests:
-```bash
-    npm run test
-```
-    To generate coverage reports:
-```bash
-    npm run test:cov
 
 ---
 
@@ -145,4 +134,3 @@ npm run test
 
 * **Backend**: Tested with Mocha, Chai, and Sinon across services and controllers. Coverage reports are generated using `nyc`. (E2E testing is planned for future iterations).
 * **Frontend**: Tested with Jest and React Testing Library for route guards, page behaviors, and editor states.
-

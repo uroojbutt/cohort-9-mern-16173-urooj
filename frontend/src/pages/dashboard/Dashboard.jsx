@@ -90,12 +90,13 @@ function Dashboard() {
         />
 
         {/* Import / Export Toolbar */}
-        {filteredNotes.length > 0 && (
+        
   <div className="flex items-center justify-end gap-3 pb-4 mb-6 border-b border-[#121212]/10">
     <ExportButton disabled={notes.length === 0} />
     <ImportButton onImportSuccess={fetchNotes} />
   </div>
-)}
+
+        {/* Notes List */}
 
         {/* Notes List */}
         {isLoading ? (
