@@ -12,6 +12,8 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  HttpException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
@@ -48,7 +50,18 @@ export class NotesController {
     @Req() req: AuthenticatedRequest,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ExportNotesResponse> {
-    const data = await this.notesService.exportNotes(req.user.userId);
+    let data: ExportNotesResponse;
+    try {
+      data = await this.notesService.exportNotes(req.user.userId);
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new InternalServerErrorException(
+        `Failed to export notes: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+
     const date = new Date().toISOString().split('T')[0];
     res.set({
       'Content-Type': 'application/json',

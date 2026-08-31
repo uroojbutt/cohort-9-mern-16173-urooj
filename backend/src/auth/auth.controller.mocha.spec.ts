@@ -7,7 +7,7 @@ import { AuthService } from './auth.service';
 describe('AuthController', () => {
   let controller: AuthController;
 
-  const mockAuthService = {
+  const mockAuthService: Record<keyof Pick<AuthService, 'signup' | 'login'>, sinon.SinonStub> = {
     signup: sinon.stub(),
     login: sinon.stub(),
   };

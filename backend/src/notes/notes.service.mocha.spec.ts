@@ -20,6 +20,17 @@ type MockNoteModel = sinon.SinonStub & {
   create: sinon.SinonStub;
 };
 
+interface TestContextError extends Error {
+  testContext?: string;
+}
+
+function withTestContext(err: unknown, context: string): TestContextError {
+  const wrapped: TestContextError =
+    err instanceof Error ? err : new Error(String(err));
+  wrapped.testContext = context;
+  return wrapped;
+}
+
 const mockNote = {
   _id: new Types.ObjectId().toString(),
   title: 'Test note',
@@ -70,11 +81,15 @@ describe('NotesService', () => {
 
   describe('create', () => {
     it('should create and return a note linked to the user', async () => {
-      const dto: CreateNoteDto = { title: 'Test note', content: '<p>Hello</p>' };
-      const result = await service.create(mockNote.userId, dto);
+      try {
+        const dto: CreateNoteDto = { title: 'Test note', content: '<p>Hello</p>' };
+        const result = await service.create(mockNote.userId, dto);
 
-      expect(model).to.have.been.calledWith({ ...dto, userId: mockNote.userId });
-      expect(result).to.deep.include(dto);
+        expect(model).to.have.been.calledWith({ ...dto, userId: mockNote.userId });
+        expect(result).to.deep.include(dto);
+      } catch (err) {
+        throw withTestContext(err, 'NotesService#create should create and return a note linked to the user');
+      }
     });
 
     it('should throw InternalServerErrorException when save fails', async () => {
@@ -101,15 +116,19 @@ describe('NotesService', () => {
 
   describe('findAll', () => {
     it('should return notes scoped to the user, sorted by updatedAt desc', async () => {
-      const exec = sinon.stub().resolves([mockNote]);
-      const sort = sinon.stub().returns({ exec });
-      model.find.returns({ sort });
+      try {
+        const exec = sinon.stub().resolves([mockNote]);
+        const sort = sinon.stub().returns({ exec });
+        model.find.returns({ sort });
 
-      const result = await service.findAll(mockNote.userId);
+        const result = await service.findAll(mockNote.userId);
 
-      expect(model.find).to.have.been.calledWith({ userId: mockNote.userId });
-      expect(sort).to.have.been.calledWith({ updatedAt: -1 });
-      expect(result).to.deep.equal([mockNote]);
+        expect(model.find).to.have.been.calledWith({ userId: mockNote.userId });
+        expect(sort).to.have.been.calledWith({ updatedAt: -1 });
+        expect(result).to.deep.equal([mockNote]);
+      } catch (err) {
+        throw withTestContext(err, 'NotesService#findAll should return notes scoped to the user, sorted by updatedAt desc');
+      }
     });
 
     it('should throw InternalServerErrorException when query fails', async () => {
@@ -127,16 +146,20 @@ describe('NotesService', () => {
 
   describe('findOne', () => {
     it('should return a note when found and owned by the user', async () => {
-      const exec = sinon.stub().resolves(mockNote);
-      model.findOne.returns({ exec });
+      try {
+        const exec = sinon.stub().resolves(mockNote);
+        model.findOne.returns({ exec });
 
-      const result = await service.findOne(mockNote.userId, mockNote._id);
+        const result = await service.findOne(mockNote.userId, mockNote._id);
 
-      expect(model.findOne).to.have.been.calledWith({
-        _id: mockNote._id,
-        userId: mockNote.userId,
-      });
-      expect(result).to.deep.equal(mockNote);
+        expect(model.findOne).to.have.been.calledWith({
+          _id: mockNote._id,
+          userId: mockNote.userId,
+        });
+        expect(result).to.deep.equal(mockNote);
+      } catch (err) {
+        throw withTestContext(err, 'NotesService#findOne should return a note when found and owned by the user');
+      }
     });
 
     it('should throw NotFoundException for an invalid id', async () => {
@@ -175,20 +198,24 @@ describe('NotesService', () => {
 
   describe('update', () => {
     it('should update and return the note when owned by the user', async () => {
-      const updated = { ...mockNote, title: 'Updated' };
-      const exec = sinon.stub().resolves(updated);
-      model.findOneAndUpdate.returns({ exec });
+      try {
+        const updated = { ...mockNote, title: 'Updated' };
+        const exec = sinon.stub().resolves(updated);
+        model.findOneAndUpdate.returns({ exec });
 
-      const result = await service.update(mockNote.userId, mockNote._id, {
-        title: 'Updated',
-      });
+        const result = await service.update(mockNote.userId, mockNote._id, {
+          title: 'Updated',
+        });
 
-      expect(model.findOneAndUpdate).to.have.been.calledWith(
-        { _id: mockNote._id, userId: mockNote.userId },
-        { title: 'Updated' },
-        { new: true, runValidators: true },
-      );
-      expect(result).to.deep.equal(updated);
+        expect(model.findOneAndUpdate).to.have.been.calledWith(
+          { _id: mockNote._id, userId: mockNote.userId },
+          { title: 'Updated' },
+          { new: true, runValidators: true },
+        );
+        expect(result).to.deep.equal(updated);
+      } catch (err) {
+        throw withTestContext(err, 'NotesService#update should update and return the note when owned by the user');
+      }
     });
 
     it('should throw NotFoundException for an invalid id', async () => {
@@ -227,16 +254,20 @@ describe('NotesService', () => {
 
   describe('remove', () => {
     it('should delete the note with the correct ownership filter', async () => {
-      const exec = sinon.stub().resolves({ deletedCount: 1 });
-      model.deleteOne.returns({ exec });
+      try {
+        const exec = sinon.stub().resolves({ deletedCount: 1 });
+        model.deleteOne.returns({ exec });
 
-      const result = await service.remove(mockNote.userId, mockNote._id);
-      expect(result).to.be.undefined;
+        const result = await service.remove(mockNote.userId, mockNote._id);
+        expect(result).to.be.undefined;
 
-      expect(model.deleteOne).to.have.been.calledWith({
-        _id: mockNote._id,
-        userId: mockNote.userId,
-      });
+        expect(model.deleteOne).to.have.been.calledWith({
+          _id: mockNote._id,
+          userId: mockNote.userId,
+        });
+      } catch (err) {
+        throw withTestContext(err, 'NotesService#remove should delete the note with the correct ownership filter');
+      }
     });
 
     it('should throw NotFoundException for an invalid id', async () => {
@@ -304,7 +335,7 @@ describe('NotesService', () => {
       const buffer = Buffer.from('{not valid json', 'utf-8');
 
       try {
-        await service.importNotes(mockNote.userId, buffer);
+        await service.importNotes(mockNote.userId, buffer, 'test.txt');
         expect.fail('Expected BadRequestException to be thrown');
       } catch (err) {
         expect(err).to.be.instanceOf(BadRequestException);
@@ -315,7 +346,7 @@ describe('NotesService', () => {
       const buffer = Buffer.from(JSON.stringify({ foo: 'bar' }), 'utf-8');
 
       try {
-        await service.importNotes(mockNote.userId, buffer);
+        await service.importNotes(mockNote.userId, buffer, 'test.txt');
         expect.fail('Expected BadRequestException to be thrown');
       } catch (err) {
         expect(err).to.be.instanceOf(BadRequestException);
@@ -325,7 +356,7 @@ describe('NotesService', () => {
     it('should skip notes that fail DTO validation', async () => {
       const buffer = Buffer.from(JSON.stringify([{ content: 'no title' }]), 'utf-8');
 
-      const result = await service.importNotes(mockNote.userId, buffer);
+      const result = await service.importNotes(mockNote.userId, buffer, 'test.txt');
 
       expect(result).to.deep.equal({ imported: 0, skipped: 1 });
       expect(model.create.called).to.be.false;
@@ -339,7 +370,7 @@ describe('NotesService', () => {
       const exec = sinon.stub().resolves(mockNote);
       model.findOne.returns({ exec });
 
-      const result = await service.importNotes(mockNote.userId, buffer);
+      const result = await service.importNotes(mockNote.userId, buffer, 'test.txt');
 
       expect(result).to.deep.equal({ imported: 0, skipped: 1 });
       expect(model.create.called).to.be.false;
@@ -352,7 +383,7 @@ describe('NotesService', () => {
       );
       model.create.resolves(mockNote);
 
-      const result = await service.importNotes(mockNote.userId, buffer);
+      const result = await service.importNotes(mockNote.userId, buffer, 'test.txt');
 
       expect(result).to.deep.equal({ imported: 1, skipped: 0 });
       expect(model.create.calledOnce).to.be.true;
@@ -365,7 +396,7 @@ describe('NotesService', () => {
       );
       model.create.rejects(new Error('DB write failed'));
 
-      const result = await service.importNotes(mockNote.userId, buffer);
+      const result = await service.importNotes(mockNote.userId, buffer, 'test.txt');
 
       expect(result).to.deep.equal({ imported: 0, skipped: 1 });
     });
