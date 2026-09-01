@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
+import { expect } from 'chai';
+import * as sinon from 'sinon';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 
@@ -7,13 +9,13 @@ describe('AuthService', () => {
   let service: AuthService;
 
   const mockUsersService = {
-    findByEmail: jest.fn(),
-    findByEmailWithPassword: jest.fn(),
-    create: jest.fn(),
+    findByEmail: sinon.stub(),
+    findByEmailWithPassword: sinon.stub(),
+    create: sinon.stub(),
   };
 
   const mockJwtService = {
-    sign: jest.fn().mockReturnValue('mock-token'),
+    sign: sinon.stub().returns('mock-token'),
   };
 
   beforeEach(async () => {
@@ -33,7 +35,11 @@ describe('AuthService', () => {
     }
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(service).to.exist;
   });
 });

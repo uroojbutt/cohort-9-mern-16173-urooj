@@ -1,13 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { expect } from 'chai';
+import * as sinon from 'sinon';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
 
-  const mockAuthService = {
-    signup: jest.fn(),
-    login: jest.fn(),
+  const mockAuthService: Record<keyof Pick<AuthService, 'signup' | 'login'>, sinon.SinonStub> = {
+    signup: sinon.stub(),
+    login: sinon.stub(),
   };
 
   beforeEach(async () => {
@@ -23,9 +25,12 @@ describe('AuthController', () => {
       throw error;
     }
   });
-  
+
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(controller).to.exist;
   });
 });
