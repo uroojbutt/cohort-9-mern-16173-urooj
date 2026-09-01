@@ -134,3 +134,22 @@ npm run test
 
 * **Backend**: Tested with Mocha, Chai, and Sinon across services and controllers. Coverage reports are generated using `nyc`. (E2E testing is planned for future iterations).
 * **Frontend**: Tested with Jest and React Testing Library for route guards, page behaviors, and editor states.
+
+## SonarQube Quality & Coverage Report
+
+![SonarQube Dashboard](./SonarQubeReport/dashboard.png)
+![Coverage Breakdown](./SonarQubeReport/coverage-breakdown.png)
+
+<details>
+<summary><b>🔍 View Detailed Metrics Screenshots (Security, Reliability, Maintainability)</b></summary>
+
+### Security & Review
+![Security Rating](./SonarQubeReport/security-rating.png)
+![Security Review](./SonarQubeReport/security-review.png)
+![Security Issues](./SonarQubeReport/security-issues.png)
+
+### Reliability & Maintainability
+![Reliability Rating](./SonarQubeReport/reliability-rating.png)
+![Maintainability](./SonarQubeReport/maintainability.png)
+
+</details>
