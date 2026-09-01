@@ -30,7 +30,7 @@ function Login() {
       newErrors.email = "Enter a valid email address";
     }
 
-    if (!formData.password) {
+    if (!formData.password.trim()) {
       newErrors.password = "Password is required";
     }
 
@@ -130,6 +130,7 @@ function Login() {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label="toggle password visibility"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B6A63] hover:text-[#121212] transition-colors cursor-pointer"
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

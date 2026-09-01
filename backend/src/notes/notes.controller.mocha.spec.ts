@@ -43,7 +43,6 @@ describe('NotesController', () => {
         .compile();
 
       controller = module.get<NotesController>(NotesController);
-      // Read back the injected value as the stubbed instance for assertions.
       service = module.get(NotesService) as unknown as sinon.SinonStubbedInstance<NotesService>;
     } catch (err) {
       throw new Error(

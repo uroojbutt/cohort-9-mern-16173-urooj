@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
@@ -13,8 +13,11 @@ type MockNoteModel = sinon.SinonStub & {
   findOne: sinon.SinonStub;
   findOneAndUpdate: sinon.SinonStub;
   deleteOne: sinon.SinonStub;
+  create: sinon.SinonStub;
+  db: { startSession: sinon.SinonStub };
 };
 
+/** Error with a test-identifying context tag attached in catch blocks below. */
 interface TestContextError extends Error {
   testContext?: string;
 }
@@ -38,6 +41,8 @@ describe('NotesService', () => {
   let model: MockNoteModel;
 
   beforeEach(async () => {
+    sinon.stub(Logger.prototype, 'error');
+
     let module: TestingModule;
     const modelConstructor = sinon
       .stub()
@@ -67,6 +72,15 @@ describe('NotesService', () => {
     model.findOne = sinon.stub();
     model.findOneAndUpdate = sinon.stub();
     model.deleteOne = sinon.stub();
+    model.create = sinon.stub().resolves();
+
+    const fakeSession = {
+      withTransaction: async (fn: () => Promise<void>) => {
+        await fn();
+      },
+      endSession: sinon.stub().resolves(),
+    };
+    model.db = { startSession: sinon.stub().resolves(fakeSession) };
   });
 
   afterEach(() => {
@@ -224,6 +238,102 @@ describe('NotesService', () => {
         } else {
           throw withTestContext(err, 'NotesService#remove should throw NotFoundException when nothing was deleted');
         }
+      }
+    });
+  });
+
+  describe('importNotes', () => {
+    it('should throw BadRequestException for invalid JSON', async () => {
+      const buffer = Buffer.from('{not valid json', 'utf-8');
+
+      try {
+        await service.importNotes(mockNote.userId, buffer, 'test.json');
+        expect.fail('Expected BadRequestException to be thrown');
+      } catch (err) {
+        if (err instanceof BadRequestException) {
+          expect(err).to.be.instanceOf(BadRequestException);
+        } else {
+          throw withTestContext(err, 'NotesService#importNotes should throw BadRequestException for invalid JSON');
+        }
+      }
+    });
+
+    it('should throw BadRequestException for an unrecognized file format', async () => {
+      const buffer = Buffer.from(JSON.stringify({ foo: 'bar' }), 'utf-8');
+
+      try {
+        await service.importNotes(mockNote.userId, buffer, 'test.json');
+        expect.fail('Expected BadRequestException to be thrown');
+      } catch (err) {
+        if (err instanceof BadRequestException) {
+          expect(err).to.be.instanceOf(BadRequestException);
+        } else {
+          throw withTestContext(err, 'NotesService#importNotes should throw BadRequestException for an unrecognized file format');
+        }
+      }
+    });
+
+    it('should skip notes that fail DTO validation', async () => {
+      const buffer = Buffer.from(JSON.stringify([{ content: 'no title' }]), 'utf-8');
+
+      try {
+        const result = await service.importNotes(mockNote.userId, buffer, 'test.json');
+
+        expect(result).to.deep.equal({ imported: 0, skipped: 1 });
+        expect(model.create.called).to.be.false;
+      } catch (err) {
+        throw withTestContext(err, 'NotesService#importNotes should skip notes that fail DTO validation');
+      }
+    });
+
+    it('should skip a note whose _id already exists for the user', async () => {
+      const buffer = Buffer.from(
+        JSON.stringify([{ _id: mockNote._id, title: 'Dup', content: 'x' }]),
+        'utf-8',
+      );
+      const exec = sinon.stub().resolves(mockNote);
+      model.findOne.returns({ session: sinon.stub().returns({ exec }) });
+
+      try {
+        const result = await service.importNotes(mockNote.userId, buffer, 'test.json');
+
+        expect(result).to.deep.equal({ imported: 0, skipped: 1 });
+        expect(model.create.called).to.be.false;
+      } catch (err) {
+        throw withTestContext(err, 'NotesService#importNotes should skip a note whose _id already exists for the user');
+      }
+    });
+
+    it('should import a valid new note (accepts { notes: [...] } wrapper too)', async () => {
+      const buffer = Buffer.from(
+        JSON.stringify({ notes: [{ title: 'Imported', content: 'body' }] }),
+        'utf-8',
+      );
+      model.create.resolves(mockNote);
+
+      try {
+        const result = await service.importNotes(mockNote.userId, buffer, 'test.json');
+
+        expect(result).to.deep.equal({ imported: 1, skipped: 0 });
+        expect(model.create.calledOnce).to.be.true;
+      } catch (err) {
+        throw withTestContext(err, 'NotesService#importNotes should import a valid new note (accepts { notes: [...] } wrapper too)');
+      }
+    });
+
+    it('should skip and log when create throws for a note', async () => {
+      const buffer = Buffer.from(
+        JSON.stringify([{ title: 'Imported', content: 'body' }]),
+        'utf-8',
+      );
+      model.create.rejects(new Error('DB write failed'));
+
+      try {
+        const result = await service.importNotes(mockNote.userId, buffer, 'test.json');
+
+        expect(result).to.deep.equal({ imported: 0, skipped: 1 });
+      } catch (err) {
+        throw withTestContext(err, 'NotesService#importNotes should skip and log when create throws for a note');
       }
     });
   });

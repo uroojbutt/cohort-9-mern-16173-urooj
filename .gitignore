@@ -130,3 +130,7 @@ dist-ssr/
 .vscode/*
 !.vscode/extensions.json
 .idea/
+# .gitignore
+.scannerwork/
+.nyc_output/
+coverage/

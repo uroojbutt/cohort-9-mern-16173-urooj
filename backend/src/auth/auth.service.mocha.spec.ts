@@ -8,13 +8,17 @@ import { UsersService } from '../users/users.service';
 describe('AuthService', () => {
   let service: AuthService;
 
-  const mockUsersService = {
+  const mockUsersService: Record<
+    'findByEmail' | 'findByEmailWithPassword' | 'create',
+    sinon.SinonStub
+  > &
+    Partial<UsersService> = {
     findByEmail: sinon.stub(),
     findByEmailWithPassword: sinon.stub(),
     create: sinon.stub(),
   };
 
-  const mockJwtService = {
+  const mockJwtService: Record<'sign', sinon.SinonStub> & Partial<JwtService> = {
     sign: sinon.stub().returns('mock-token'),
   };
 
