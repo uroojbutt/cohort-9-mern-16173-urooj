@@ -53,7 +53,7 @@ Notesify is a full-stack notes management application built with NestJS on the b
 ### Logging & Security
 - Structured server-side logging via `pino-http` / `nestjs-pino`, with a custom request serializer limited to method, URL, and status code.
 - Security headers applied via Helmet.
-- Global `ValidationPipe` with `whitelist: true` to strip unrecognized payload fields.
+- Global `ValidationPipe` with `whitelist: true` and `forbidNonWhitelisted: true`, so unrecognized payload fields are rejected with a validation error rather than silently stripped.
 - MongoDB connection managed through `@nestjs/mongoose` and `ConfigService`, with an optional custom DNS resolver gated behind a `USE_CUSTOM_DNS` environment flag.
 
 ### Responsive Design
@@ -193,7 +193,9 @@ npm run test
 
 ---
 
-## API Endpoints (`/api`)
+## API Endpoints
+
+All endpoints below are prefixed with `/api`.
 
 | Method | Endpoint | Description | Auth Required |
 | --- | --- | --- | --- |
@@ -233,6 +235,32 @@ The project uses a dual-testing setup on the backend and a single framework on t
 ---
 
 ## Git Workflow
+
+```
+Fetch Upstream
+    ↓
+Checkout Develop
+    ↓
+Merge Upstream/Develop
+    ↓
+Push to Origin
+    ↓
+Create Feature Branch
+    ↓
+Make Changes & Commit
+    ↓
+Push Branch to Origin
+    ↓
+Open Pull Request
+    ↓
+CodeRabbit Review
+    ↓
+Fix Review Comments
+    ↓
+Mentor Review
+    ↓
+Merge to Develop
+```
 
 - **Branch naming**: feature branches follow a `feature/<area>/<description>` convention, e.g. `feature/backend/import-export`, `feature/frontend/authentication`.
 - **Sequential/dependent branching**: rather than always branching from `develop`, each new branch is created from the most recent local branch when the previous branch's PR has not yet merged (e.g. `feature/backend/mocha-chai-testing` was branched from `feature/backend/import-export`, and `feature/frontend/notes-integration` was branched from the auth module branch). Once the prior branch's PR merges into `develop`, the dependent branch is rebased directly onto `develop`.
